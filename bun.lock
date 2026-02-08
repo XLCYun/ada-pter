@@ -15,21 +15,7 @@
       "name": "ada-pter",
       "version": "0.0.1",
     },
-    "packages/anthropic": {
-      "name": "@ada-pter/anthropic",
-      "version": "0.0.1",
-      "dependencies": {
-        "ada-pter": "workspace:*",
-      },
-    },
-    "packages/openai": {
-      "name": "@ada-pter/openai",
-      "version": "0.0.1",
-      "dependencies": {
-        "ada-pter": "workspace:*",
-      },
-    },
-    "packages/rxjs": {
+    "packages/integrations/rxjs": {
       "name": "@ada-pter/rxjs",
       "version": "0.0.1",
       "dependencies": {
@@ -39,13 +25,36 @@
         "rxjs": ">=7.0.0",
       },
     },
+    "packages/middlewares/logger": {
+      "name": "@ada-pter/logger",
+      "version": "0.0.1",
+      "dependencies": {
+        "ada-pter": "workspace:*",
+      },
+    },
+    "packages/providers/anthropic": {
+      "name": "@ada-pter/anthropic",
+      "version": "0.0.1",
+      "dependencies": {
+        "ada-pter": "workspace:*",
+      },
+    },
+    "packages/providers/openai": {
+      "name": "@ada-pter/openai",
+      "version": "0.0.1",
+      "dependencies": {
+        "ada-pter": "workspace:*",
+      },
+    },
   },
   "packages": {
-    "@ada-pter/anthropic": ["@ada-pter/anthropic@workspace:packages/anthropic"],
+    "@ada-pter/anthropic": ["@ada-pter/anthropic@workspace:packages/providers/anthropic"],
 
-    "@ada-pter/openai": ["@ada-pter/openai@workspace:packages/openai"],
+    "@ada-pter/logger": ["@ada-pter/logger@workspace:packages/middlewares/logger"],
 
-    "@ada-pter/rxjs": ["@ada-pter/rxjs@workspace:packages/rxjs"],
+    "@ada-pter/openai": ["@ada-pter/openai@workspace:packages/providers/openai"],
+
+    "@ada-pter/rxjs": ["@ada-pter/rxjs@workspace:packages/integrations/rxjs"],
 
     "@babel/generator": ["@babel/generator@8.0.0-rc.1", "", { "dependencies": { "@babel/parser": "^8.0.0-rc.1", "@babel/types": "^8.0.0-rc.1", "@jridgewell/gen-mapping": "^0.3.12", "@jridgewell/trace-mapping": "^0.3.28", "@types/jsesc": "^2.5.0", "jsesc": "^3.0.2" } }, "sha512-3ypWOOiC4AYHKr8vYRVtWtWmyvcoItHtVqF8paFax+ydpmUdPsJpLBkBBs5ItmhdrwC3a0ZSqqFAdzls4ODP3w=="],
 

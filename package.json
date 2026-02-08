@@ -3,7 +3,10 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/ada-pter",
+    "packages/providers/*",
+    "packages/integrations/*",
+    "packages/middlewares/*"
   ],
   "scripts": {
     "build": "bun run --filter '*' build",
