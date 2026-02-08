@@ -17,7 +17,7 @@ export type {
 } from './types';
 
 // Core
-export { compose } from './core';
+export { compose, deepMerge, extractConfig } from './core';
 
 // Errors
 export { AdaPterError, ProviderError, UnsupportedApiError, TimeoutError } from './errors';
