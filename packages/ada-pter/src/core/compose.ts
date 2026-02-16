@@ -1,4 +1,4 @@
-import type { AdapterContext, Middleware } from '../types';
+import type { AdapterContext, Middleware } from "../types";
 
 /**
  * Compose an array of middleware into a single function that executes them
@@ -6,9 +6,7 @@ import type { AdapterContext, Middleware } from '../types';
  * pass control to the next layer, then resumes after it returns.
  *
  * Includes a safety check that throws if `next()` is called more than once
- * within the same middleware. Since retry and fallback are handled in their
- * own layers (executor and dispatch), compose does not need to support
- * multiple `next()` invocations.
+ * within the same middleware.
  */
 export function compose(middlewares: Middleware[]) {
   return (ctx: AdapterContext): Promise<void> => {
@@ -16,7 +14,7 @@ export function compose(middlewares: Middleware[]) {
 
     function dispatch(i: number): Promise<void> {
       if (i <= index) {
-        return Promise.reject(new Error('next() called multiple times'));
+        return Promise.reject(new Error("next() called multiple times"));
       }
       index = i;
       const fn = middlewares[i];

@@ -1,59 +1,59 @@
-import type { AdapterContext, ApiType } from './core';
+import type { AdapterContext, RequestConfig } from "./core";
 
 /**
- * Provider adapter — a pure configuration object (not a middleware function).
- * Created via defineProvider() and registered to the routing table via adapter.use().
+ * Response transformer function.
+ * Receives ctx with ctx.response.raw already set by Core after fetch completes.
+ * Responsible for reading the response and writing results to ctx:
+ * - Non-streaming: read ctx.response.raw, transform, store in ctx.response.data
+ * - Streaming: read ctx.response.raw.body, build AsyncIterable, store in ctx.response.data
+ *
+ * Core provides reusable transformers (SSE parser, JSON parser, etc.)
+ * that providers can compose with their own custom transformers.
  */
-export interface ProviderAdapter {
-  /** Unique provider identifier, e.g. 'openai', 'anthropic'.
-   *  Used for prefix-based route matching ("openai" in "openai/gpt-4") and in log/error messages. */
+export type ResponseTransformer = (ctx: AdapterContext) => Promise<void>;
+
+/**
+ * Provider — a pure configuration object (not a middleware function).
+ * Created via defineProvider() and registered to the route chain via adapter.route().
+ *
+ * Note: `name` is for identification and log/error messages only, NOT for route matching.
+ * A single provider (e.g. a custom gateway) can handle requests for multiple provider prefixes.
+ */
+export interface Provider {
+  /** Provider identifier, e.g. 'openai', 'my-gateway'.
+   *  Used in log/error messages only. NOT used for route matching. */
   name: string;
 
-  /** List of model matching rules for this provider. Iterated during adapter-level routing.
-   *  - string: exact match (e.g. 'gpt-4')
-   *  - RegExp: regex match (e.g. /^gpt-/)
-   *  - function: custom match logic (e.g. model => model.startsWith('custom-')) */
-  models: Array<string | RegExp | ((model: string) => boolean)>;
-
-  /** Returns common HTTP headers for all APIs of this provider (primarily auth).
-   *  e.g. { Authorization: 'Bearer sk-xxx' }. Can be overridden by handler-level getHeaders. */
-  getHeaders(ctx: AdapterContext): Record<string, string>;
-
-  /** Handler map registered by API type. Only needs to implement the API types this provider supports;
-   *  unsupported types can be omitted (executor throws UnsupportedApiError when not found). */
-  handlers: Partial<Record<ApiType, ApiHandler>>;
+  /** Dynamically returns the appropriate handler based on ctx (apiType, model, etc.).
+   *  Returns null if this provider cannot handle the given (apiType, model) combination. */
+  getHandler(ctx: AdapterContext): ApiHandler | null;
 }
 
 /**
- * Handler for a single API type. Tells the executor "where to send the request
- * and how to transform request/response".
- * For 90% of cases, only getEndpoint + transformRequest + transformResponse are needed;
- * the executor handles fetch/SSE/error handling. Use customExecute for full control in special cases.
+ * Handler for a single API type. Tells the adapter how to build the request
+ * and how to transform the response.
+ *
+ * getRequestConfig() builds the full HTTP request configuration (URL, method, headers, body).
+ * responseTransformers is an ordered array of functions executed sequentially after fetch,
+ * each reading from ctx and writing results back to ctx.
+ * The adapter's createRequestMiddleware handles the actual fetch call.
  */
 export interface ApiHandler {
-  /** Returns the request URL for this API, e.g. 'https://api.openai.com/v1/chat/completions'.
-   *  Can be dynamically constructed based on ctx (e.g. different models use different endpoints). */
-  getEndpoint(ctx: AdapterContext): string;
+  /** Build the full HTTP request configuration for this API call.
+   *  Returns a RequestConfig (url + RequestInit fields) that will be merged into ctx.request.
+   *  Called by createContext() after route resolution, before middleware pipeline starts.
+   *  Handler can access ctx.config for API params, auth keys, etc. */
+  getRequestConfig(ctx: AdapterContext): RequestConfig;
 
-  /** Optional: override provider-level headers. For cases where a specific API requires extra headers.
-   *  Return value is merged with provider.getHeaders() result (handler-level takes precedence). */
-  getHeaders?(ctx: AdapterContext): Record<string, string>;
-
-  /** Transforms unified request parameters from ctx into the provider's API request body.
-   *  Return value is JSON.stringify'd and used as the fetch body. */
-  transformRequest(ctx: AdapterContext): unknown;
-
-  /** Transforms the provider API's raw JSON response into the unified response format.
-   *  `raw` is the result of await res.json(). Return value is stored in ctx.response. */
-  transformResponse(raw: unknown): unknown;
-
-  /** Optional: stream chunk transformer. Converts a raw SSE data line string into a unified chunk format.
-   *  Return null to skip the chunk (e.g. heartbeat packets).
-   *  When not provided, the core's default OpenAI SSE JSON parser is used. */
-  transformStreamChunk?(raw: string): unknown | null;
-
-  /** Optional: fully take over execution, bypassing the core's default fetch flow.
-   *  For special cases: multipart/form-data, SDK calls, non-JSON responses, etc.
-   *  Contract: non-streaming must set ctx.response; streaming must set ctx.streamResult. */
-  customExecute?(ctx: AdapterContext): Promise<void>;
+  /** Ordered array of response transformer functions.
+   *  Executed sequentially by createRequestMiddleware after ctx.response.raw is set.
+   *  Each transformer reads from ctx and writes results back to ctx.
+   *
+   *  Typical composition:
+   *  - Non-streaming: [jsonParser, mapToUnifiedFormat]
+   *  - Streaming: [sseParser, mapChunksToUnifiedFormat]
+   *
+   *  Core provides reusable transformers (SSE parser, JSON parser, etc.)
+   *  that providers can compose with their own custom transformers. */
+  responseTransformers: ResponseTransformer[];
 }

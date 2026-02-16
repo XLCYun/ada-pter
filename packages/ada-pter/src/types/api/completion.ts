@@ -1,18 +1,14 @@
-import type { Choice, Message, Usage } from './common';
+import type { AdapterConfig } from "../config";
+import type { Choice, Message, Usage } from "./common";
 
-/** Completion request parameters (passed by the user when calling adapter.completion()). */
-export interface CompletionRequest {
-  /** Model identifier. Supports "provider/model" prefix format or plain model name. */
-  model: string;
-  /** List of conversation messages. */
+/**
+ * Completion API call parameters.
+ * Extends AdapterConfig so all config fields are available; only `messages` is required at call-level.
+ * `model` can be set via configure() at global/API level, so it remains optional here.
+ */
+export interface CompletionRequest extends AdapterConfig {
+  /** List of conversation messages (required for completion calls). */
   messages: Message[];
-  /** Optional: temperature (can also be set via three-level config merge). */
-  temperature?: number;
-  /** Optional: maximum number of tokens to generate (can also be set via three-level config merge). */
-  maxTokens?: number;
-  /** Optional: abort signal. */
-  signal?: AbortSignal;
-  // More fields can be added in the future: topP, frequencyPenalty, tools, etc.
 }
 
 /** Unified completion response format (aligned with OpenAI format). */

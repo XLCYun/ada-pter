@@ -1,5 +1,6 @@
 {
-  "editor.defaultFormatter": "biomejs.biome",
+  "biome.enabled": true,
+  "biome.configurationPath": "${workspaceFolder}/ada-pter/biome.json",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit",

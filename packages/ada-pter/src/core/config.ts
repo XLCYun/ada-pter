@@ -1,34 +1,17 @@
-import type { AdapterConfig, ResolvedConfig } from '../types';
-
-/**
- * Known configuration keys defined in AdapterConfig.
- * Used by extractConfig() to separate config fields from request parameters.
- *
- * Maintained as a Set for O(1) lookup performance.
- */
-const CONFIG_KEYS: ReadonlySet<string> = new Set<keyof AdapterConfig>([
-  'timeout',
-  'temperature',
-  'maxTokens',
-  'maxRetries',
-  'retryDelay',
-  'fallbackModels',
-  'onFallback',
-  'providers',
-]);
+import type { AdapterConfig } from "../types";
 
 /**
  * Check whether a value is a plain object (not an array, null, Date, RegExp, etc.).
  * Used by deepMerge to decide whether to recurse into a value.
  */
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null) return false;
+  if (typeof value !== "object" || value === null) return false;
   const proto = Object.getPrototypeOf(value);
   return proto === Object.prototype || proto === null;
 }
 
 /**
- * Deep-merge multiple configuration sources into a single ResolvedConfig.
+ * Deep-merge multiple configuration sources into a single AdapterConfig.
  *
  * Merge strategy (matches the design spec):
  *  - Later sources override earlier ones (call-level > API-level > global).
@@ -49,63 +32,25 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * ```
  */
 export function deepMerge(
-  ...sources: Array<Record<string, unknown> | undefined>
-): ResolvedConfig {
+  ...sources: Array<Partial<AdapterConfig> | undefined>
+): AdapterConfig {
   const result: Record<string, unknown> = {};
 
-  for (const source of sources) {
-    if (source === undefined || source === null) continue;
+  sources
+    .filter((source) => source !== undefined && source !== null)
+    .forEach((source) => {
+      Object.keys(source as Record<string, unknown>).forEach((key) => {
+        const srcVal = (source as Record<string, unknown>)[key];
+        const dstVal = result[key];
+        result[key] =
+          isPlainObject(dstVal) && isPlainObject(srcVal)
+            ? deepMerge(
+                dstVal as Partial<AdapterConfig>,
+                srcVal as Partial<AdapterConfig>,
+              )
+            : srcVal;
+      });
+    });
 
-    for (const key of Object.keys(source)) {
-      const srcVal = source[key];
-      const dstVal = result[key];
-
-      // Both sides are plain objects → recurse
-      if (isPlainObject(dstVal) && isPlainObject(srcVal)) {
-        result[key] = deepMerge(dstVal, srcVal);
-      } else {
-        // Primitives, arrays, functions, non-plain objects → overwrite
-        result[key] = srcVal;
-      }
-    }
-  }
-
-  return result as ResolvedConfig;
-}
-
-/**
- * Extract known AdapterConfig fields from call parameters.
- *
- * When a user calls `adapter.completion({ model, messages, temperature, timeout })`,
- * fields like `temperature` and `timeout` are config concerns, not part of the
- * API request body. This function separates them so the framework can merge
- * them into ctx.config while keeping ctx.request clean.
- *
- * Only fields whose value is not `undefined` are included in the result.
- *
- * @returns An object with two properties:
- *  - `config`: Extracted config fields (Partial<AdapterConfig>).
- *  - `rest`: Remaining fields that belong to the request body.
- */
-export function extractConfig(params: Record<string, unknown>): {
-  config: Partial<AdapterConfig>;
-  rest: Record<string, unknown>;
-} {
-  const config: Record<string, unknown> = {};
-  const rest: Record<string, unknown> = {};
-
-  for (const key of Object.keys(params)) {
-    if (CONFIG_KEYS.has(key)) {
-      if (params[key] !== undefined) {
-        config[key] = params[key];
-      }
-    } else {
-      rest[key] = params[key];
-    }
-  }
-
-  return {
-    config: config as Partial<AdapterConfig>,
-    rest,
-  };
+  return result as AdapterConfig;
 }

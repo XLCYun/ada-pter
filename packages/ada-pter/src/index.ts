@@ -1,25 +1,57 @@
 // Types (re-exported from types/)
-export type {
-  ApiType,
-  AdapterContext,
-  Middleware,
-  Next,
-} from './types';
-export type { ProviderAdapter, ApiHandler } from './types';
-export type { AdapterConfig, ResolvedConfig } from './types';
-export type {
-  Message,
-  Choice,
-  Usage,
-  CompletionRequest,
-  CompletionResponse,
-  StreamChunk,
-} from './types';
 
 // Core
-export { compose, deepMerge, extractConfig } from './core';
-
+export {
+  AdaPter,
+  adapter,
+  compose,
+  createAdapter,
+  deepMerge,
+  matchCondition,
+  matchPattern,
+  parseModelId,
+} from "./core";
 // Errors
-export { AdaPterError, ProviderError, UnsupportedApiError, TimeoutError } from './errors';
+export {
+  AdaPterError,
+  NoProviderError,
+  ProviderError,
+  TimeoutError,
+  UnsupportedApiError,
+} from "./errors";
+export { defineProvider } from "./provider";
+export type {
+  JsonTransformerOptions,
+  SseTransformerOptions,
+} from "./transformers/index";
+export {
+  autoResponseTransformers,
+  createJsonTransformer,
+  createSseTransformer,
+  jsonTransformer,
+  sseTransformer,
+} from "./transformers/index";
+export type {
+  AdapterConfig,
+  AdapterContext,
+  AdapterResponse,
+  ApiHandler,
+  ApiType,
+  Choice,
+  CompletionRequest,
+  CompletionResponse,
+  MatchPattern,
+  Message,
+  Middleware,
+  Next,
+  Provider,
+  RequestConfig,
+  ResponseTransformer,
+  RouteCondition,
+  RouteEntry,
+  RouteResolver,
+  StreamChunk,
+  Usage,
+} from "./types";
 
-export const VERSION = '0.0.1';
+export const VERSION = "0.0.1";

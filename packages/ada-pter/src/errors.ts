@@ -14,7 +14,7 @@
 export class AdaPterError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'AdaPterError';
+    this.name = "AdaPterError";
     // Fix prototype chain so `instanceof` works correctly even when
     // compiled down to ES5 (where extending built-ins breaks the chain).
     Object.setPrototypeOf(this, new.target.prototype);
@@ -34,7 +34,7 @@ export class ProviderError extends AdaPterError {
 
   constructor(provider: string, status: number, body: string) {
     super(`[${provider}] HTTP ${status}: ${body}`);
-    this.name = 'ProviderError';
+    this.name = "ProviderError";
     this.provider = provider;
     this.status = status;
     this.body = body;
@@ -52,9 +52,23 @@ export class UnsupportedApiError extends AdaPterError {
 
   constructor(provider: string, apiType: string) {
     super(`Provider "${provider}" does not support API type "${apiType}"`);
-    this.name = 'UnsupportedApiError';
+    this.name = "UnsupportedApiError";
     this.provider = provider;
     this.apiType = apiType;
+  }
+}
+
+/**
+ * Thrown when no provider in the route chain can handle the requested model.
+ * This typically means the user needs to register more routes or enable autoRoute()
+ */
+export class NoProviderError extends AdaPterError {
+  readonly model: string;
+
+  constructor(model: string) {
+    super(`No provider found for model "${model}".`);
+    this.name = "NoProviderError";
+    this.model = model;
   }
 }
 
@@ -67,7 +81,23 @@ export class TimeoutError extends AdaPterError {
 
   constructor(timeout: number) {
     super(`Request timed out after ${timeout}ms`);
-    this.name = 'TimeoutError';
+    this.name = "TimeoutError";
     this.timeout = timeout;
+  }
+}
+
+/**
+ * Thrown when a model ID string is malformed or contains invalid components.
+ * This includes empty provider, empty model, or malformed structure.
+ */
+export class InvalidModelError extends AdaPterError {
+  readonly modelId: string;
+  readonly reason: string;
+
+  constructor(modelId: string, reason: string) {
+    super(`Invalid model ID "${modelId}": ${reason}`);
+    this.name = "InvalidModelError";
+    this.modelId = modelId;
+    this.reason = reason;
   }
 }

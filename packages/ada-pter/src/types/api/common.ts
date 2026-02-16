@@ -1,7 +1,7 @@
 /** A conversation message. */
 export interface Message {
   /** Role: system (system prompt), user (user input), assistant (model reply). */
-  role: 'system' | 'user' | 'assistant' | (string & {});
+  role: "system" | "user" | "assistant" | (string & {});
   /** Message content. */
   content: string;
 }
