@@ -1,5 +1,5 @@
 import type { ResponseTransformer } from "../types";
-import { getContentType, isSseContentType } from "./utils";
+import { getResponseContentType, isSseContentType } from "./utils";
 
 // biome-ignore lint/complexity/noBannedTypes: no options for now
 export type SseTransformerOptions = {};
@@ -65,7 +65,7 @@ export function createSseTransformer(
 		const raw = ctx.response.raw;
 		if (!raw) return;
 
-		const contentType = getContentType(ctx);
+		const contentType = getResponseContentType(ctx);
 		if (!isSseContentType(contentType)) return;
 
 		const body = raw.body;
