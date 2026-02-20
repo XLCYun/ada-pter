@@ -1,1 +1,1 @@
-export const name = "@ada-pter/openai";
+export { autoProvider, name } from "./completion";

@@ -2,56 +2,65 @@
 
 // Core
 export {
-  AdaPter,
-  adapter,
-  compose,
-  createAdapter,
-  deepMerge,
-  matchCondition,
-  matchPattern,
-  parseModelId,
+	AdaPter,
+	adapter,
+	compose,
+	createAdapter,
+	deepMerge,
+	matchCondition,
+	matchPattern,
+	parseModelId,
 } from "./core";
+
+export { defaults } from "./defaults";
 // Errors
 export {
-  AdaPterError,
-  NoProviderError,
-  ProviderError,
-  TimeoutError,
-  UnsupportedApiError,
+	AdaPterError,
+	NoProviderError,
+	ProviderError,
+	TimeoutError,
+	UnsupportedApiError,
 } from "./errors";
+export type {
+	ResolveApiBaseOptions,
+	ResolveApiKeyOptions,
+	ResolveApiPathOptions,
+} from "./helpers";
+export {
+	joinPath,
+	resolveApiBase,
+	resolveApiKey,
+	resolveApiPath,
+} from "./helpers";
 export { defineProvider } from "./provider";
 export type {
-  JsonTransformerOptions,
-  SseTransformerOptions,
+	JsonTransformerOptions,
+	SseTransformerOptions,
 } from "./transformers/index";
 export {
-  autoResponseTransformers,
-  createJsonTransformer,
-  createSseTransformer,
-  jsonTransformer,
-  sseTransformer,
+	autoResponseTransformers,
+	createJsonTransformer,
+	createSseTransformer,
+	jsonTransformer,
+	sseTransformer,
 } from "./transformers/index";
 export type {
-  AdapterConfig,
-  AdapterContext,
-  AdapterResponse,
-  ApiHandler,
-  ApiType,
-  Choice,
-  CompletionRequest,
-  CompletionResponse,
-  MatchPattern,
-  Message,
-  Middleware,
-  Next,
-  Provider,
-  RequestConfig,
-  ResponseTransformer,
-  RouteCondition,
-  RouteEntry,
-  RouteResolver,
-  StreamChunk,
-  Usage,
+	AdapterConfig,
+	AdapterContext,
+	AdapterResponse,
+	ApiHandler,
+	ApiType,
+	CompletionRequest,
+	CompletionResponse,
+	MatchPattern,
+	Middleware,
+	Next,
+	Provider,
+	RequestConfig,
+	ResponseTransformer,
+	RouteCondition,
+	RouteEntry,
+	RouteResolver,
 } from "./types";
 
 export const VERSION = "0.0.1";

@@ -1,13 +1,14 @@
+import { defaults } from "../defaults";
 import { getContentType, hasJsonContentType } from "../transformers/utils";
 import type {
 	AdapterConfig,
 	AdapterContext,
 	ApiType,
+	CompletionChunk,
 	CompletionRequest,
 	CompletionResponse,
 	Middleware,
 	Provider,
-	StreamChunk,
 } from "../types";
 import type { RouteCondition, RouteEntry, RouteResolver } from "../types/route";
 import { compose } from "./compose";
@@ -158,6 +159,7 @@ export class AdaPter {
 		models: string[];
 	} {
 		const config = deepMerge(
+			defaults,
 			this.globalConfig,
 			this.apiConfigs.get(apiType) ?? {},
 			params,
@@ -270,17 +272,17 @@ export class AdaPter {
 
 	completion(
 		params: CompletionRequest & { stream: true },
-	): AsyncIterable<StreamChunk>;
+	): AsyncIterable<CompletionChunk>;
 	completion(
 		params: CompletionRequest & { stream?: false | undefined },
 	): Promise<CompletionResponse>;
 	completion(
 		params: CompletionRequest,
-	): Promise<CompletionResponse> | AsyncIterable<StreamChunk> {
-		return this.execute<CompletionResponse | StreamChunk>(
+	): Promise<CompletionResponse> | AsyncIterable<CompletionChunk> {
+		return this.execute<CompletionResponse | CompletionChunk>(
 			"completion",
 			params as never,
-		) as Promise<CompletionResponse> | AsyncIterable<StreamChunk>;
+		) as Promise<CompletionResponse> | AsyncIterable<CompletionChunk>;
 	}
 }
 

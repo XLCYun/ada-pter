@@ -2,12 +2,12 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { AdaPter, adapter, createAdapter } from "../../src/core/adapter";
 import { autoLoader } from "../../src/core/auto-loader";
+import { defaults } from "../../src/defaults";
 import {
 	InvalidModelError,
 	NoProviderError,
 	UnsupportedApiError,
 } from "../../src/errors";
-import type { StreamChunk } from "../../src/types";
 import type { Middleware } from "../../src/types/core";
 import type { ApiHandler, Provider } from "../../src/types/provider";
 
@@ -84,9 +84,9 @@ describe("streaming completions", () => {
 			messages: [],
 			stream: true,
 		});
-		const stream = streamResult as AsyncIterable<StreamChunk>;
+		const stream = streamResult as AsyncIterable<any>;
 
-		const received: StreamChunk[] = [];
+		const received: any[] = [];
 		for await (const chunk of stream) {
 			received.push(chunk);
 		}
@@ -115,9 +115,9 @@ describe("streaming completions", () => {
 			messages: [],
 			stream: true,
 		});
-		const stream = streamResult as AsyncIterable<StreamChunk>;
+		const stream = streamResult as AsyncIterable<any>;
 
-		const collected: StreamChunk[] = [];
+		const collected: any[] = [];
 		for await (const chunk of stream) {
 			collected.push(chunk);
 		}
@@ -572,6 +572,55 @@ describe("error: no model", () => {
 	});
 });
 
+// ─── Four-level config merge (defaults > global > API > call) ──────────────────────────────────────────
+
+describe("four-level config merge with defaults", () => {
+	afterEach(() => {
+		// Clean up defaults for other tests
+		(Object.keys(defaults) as Array<keyof typeof defaults>).forEach((key) => {
+			delete defaults[key];
+		});
+	});
+
+	test("defaults > global > API-level > call-level priority", async () => {
+		// Set up defaults
+		defaults.timeout = 15000;
+		defaults.maxRetries = 2;
+		defaults.apiKey = "default-key";
+
+		let resolvedConfig: any;
+
+		const a = createAdapter()
+			.configure({ timeout: 5000, maxRetries: 3, apiKey: "global-key" })
+			.configure("completion", {
+				timeout: 10000,
+				apiBase: "https://api.example.com",
+			})
+			.use(async (ctx, next) => {
+				resolvedConfig = { ...ctx.config };
+				await next();
+			})
+			.route({ model: /.*/ }, makeProvider("test"));
+
+		// Call with call-level overrides
+		await a.completion({
+			model: "gpt-4",
+			timeout: 3000,
+			apiKey: "call-key",
+			apiPath: "/chat/completions",
+			messages: [],
+		});
+
+		// Verify priority: call > API > global > defaults
+		expect(resolvedConfig.timeout).toBe(3000); // call-level
+		expect(resolvedConfig.apiKey).toBe("call-key"); // call-level
+		expect(resolvedConfig.apiPath).toBe("/chat/completions"); // call-level
+		expect(resolvedConfig.apiBase).toBe("https://api.example.com"); // API-level
+		expect(resolvedConfig.maxRetries).toBe(3); // global-level
+		expect(resolvedConfig.model).toBe("gpt-4"); // call-level
+	});
+});
+
 // ─── Three-level config priority ──────────────────────────────────────────
 
 describe("three-level config merge priority", () => {
@@ -630,7 +679,7 @@ describe("three-level config merge priority", () => {
 	});
 
 	test("API params (temperature) support three-level merge", async () => {
-		let capturedTemp: number | undefined;
+		let capturedTemp: number | null | undefined;
 
 		const a = createAdapter()
 			.configure({ temperature: 0.5 })

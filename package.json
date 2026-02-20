@@ -1,29 +1,29 @@
 {
-	"name": "ada-pter-monorepo",
-	"private": true,
-	"type": "module",
-	"workspaces": [
-		"packages/ada-pter",
-		"packages/providers/*",
-		"packages/integrations/*",
-		"packages/middlewares/*"
-	],
-	"scripts": {
-		"build": "bun run --filter '*' build",
-		"dev": "bun run --filter '*' dev",
-		"test": "bun test",
-		"test:cov": "bun test --coverage",
-		"test:cov:lcov": "bun test --coverage --coverage-reporter=lcov",
-		"test:cov:html": "bun test --coverage --coverage-reporter=lcov && genhtml ./coverage/lcov.info --output-directory ./coverage/html",
-		"test:cov:report": "bun test --coverage --coverage-reporter=text --coverage-reporter=lcov && genhtml ./coverage/lcov.info --output-directory ./coverage/html",
-		"lint": "biome check .",
-		"lint:fix": "biome check --write .",
-		"format": "biome format --write ."
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^2.3.14",
-		"tsdown": "^0.20.3",
-		"typescript": "^5.9.3",
-		"@types/bun": "latest"
-	}
+  "name": "ada-pter-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/ada-pter",
+    "packages/providers/*",
+    "packages/integrations/*",
+    "packages/middlewares/*"
+  ],
+  "scripts": {
+    "build": "bun run --filter '*' build",
+    "dev": "bun run --filter '*' dev",
+    "test": "bun test",
+    "test:cov": "bun test --coverage",
+    "test:cov:lcov": "bun test --coverage --coverage-reporter=lcov",
+    "test:cov:html": "bun test --coverage --coverage-reporter=lcov && genhtml ./coverage/lcov.info --output-directory ./coverage/html",
+    "test:cov:report": "bun test --coverage --coverage-reporter=text --coverage-reporter=lcov && genhtml ./coverage/lcov.info --output-directory ./coverage/html",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
+    "tsdown": "^0.20.3",
+    "typescript": "^5.9.3",
+    "@types/bun": "latest"
+  }
 }
