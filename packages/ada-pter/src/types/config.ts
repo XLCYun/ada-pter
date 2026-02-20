@@ -9,33 +9,33 @@ import type { ChatCompletionCreateParamsBase } from "./openai/completions";
  * When adding new fields, they MUST be explicitly declared here.
  */
 export interface AdapterConfig
-	extends Partial<Omit<ChatCompletionCreateParamsBase, "model">> {
-	apiKey?: string | ((ctx: AdapterContext) => string);
-	apiBase?: string | ((ctx: AdapterContext) => string);
-	apiPath?: string | ((ctx: AdapterContext) => string);
+  extends Partial<Omit<ChatCompletionCreateParamsBase, "model">> {
+  apiKey?: string | ((ctx: AdapterContext) => string);
+  apiBase?: string | ((ctx: AdapterContext) => string);
+  apiPath?: string | ((ctx: AdapterContext) => string);
 
-	/** Whether to use streaming responses when supported by the handler. */
-	stream?: boolean;
+  /** Whether to use streaming responses when supported by the handler. */
+  stream?: boolean;
 
-	/** Request timeout in milliseconds. Implemented via AbortSignal.timeout(). No timeout by default. */
-	timeout?: number;
+  /** Request timeout in milliseconds. Implemented via AbortSignal.timeout(). No timeout by default. */
+  timeout?: number;
 
-	/** Model name/ID, or an array for fallback chain.
-	 *  - string: e.g. 'gpt-4' or 'openai/gpt-4'
-	 *  - string[]: tried sequentially; next model is used when the current one fails (retries exhausted).
-	 */
-	model?: string | string[];
+  /** Model name/ID, or an array for fallback chain.
+   *  - string: e.g. 'gpt-4' or 'openai/gpt-4'
+   *  - string[]: tried sequentially; next model is used when the current one fails (retries exhausted).
+   */
+  model?: string | string[];
 
-	/** Callback invoked on fallback switch (when model array has multiple entries).
-	 *  Used for logging/monitoring. Args: (error, fromModel, toModel). */
-	onFallback?: (error: Error, from: string, to: string) => void;
+  /** Callback invoked on fallback switch (when model array has multiple entries).
+   *  Used for logging/monitoring. Args: (error, fromModel, toModel). */
+  onFallback?: (error: Error, from: string, to: string) => void;
 
-	/** Maximum number of retries. Only retries HTTP requests, does not re-run the middleware chain. Default: 3. */
-	maxRetries?: number;
+  /** Maximum number of retries. Only retries HTTP requests, does not re-run the middleware chain. Default: 3. */
+  maxRetries?: number;
 
-	/** Base delay for retries in milliseconds. Actual delay = baseDelay * 2^attempt (exponential backoff). Default: 1000. */
-	retryDelay?: number;
+  /** Base delay for retries in milliseconds. Actual delay = baseDelay * 2^attempt (exponential backoff). Default: 1000. */
+  retryDelay?: number;
 
-	/** Abort signal for cancellation. */
-	signal?: AbortSignal;
+  /** Abort signal for cancellation. */
+  signal?: AbortSignal;
 }

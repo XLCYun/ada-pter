@@ -1,8 +1,8 @@
 import type { AdapterConfig } from "../config";
 import type {
-	ChatCompletion,
-	ChatCompletionChunk,
-	ChatCompletionMessageParam,
+  ChatCompletion,
+  ChatCompletionChunk,
+  ChatCompletionMessageParam,
 } from "../openai/completions";
 import type { MarkRequired } from "./common";
 

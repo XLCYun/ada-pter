@@ -1,11 +1,11 @@
 export { joinPath } from "./path";
 export type {
-	ResolveApiBaseOptions,
-	ResolveApiKeyOptions,
-	ResolveApiPathOptions,
+  ResolveApiBaseOptions,
+  ResolveApiKeyOptions,
+  ResolveApiPathOptions,
 } from "./resolver";
 export {
-	resolveApiBase,
-	resolveApiKey,
-	resolveApiPath,
+  resolveApiBase,
+  resolveApiKey,
+  resolveApiPath,
 } from "./resolver";

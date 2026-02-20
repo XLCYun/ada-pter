@@ -1,46 +1,46 @@
 import type { AdapterContext } from "../types";
 
 export interface ResolveApiKeyOptions {
-	envName?: string;
+  envName?: string;
 }
 
 export interface ResolveApiBaseOptions {
-	envName?: string;
-	default?: string;
+  envName?: string;
+  default?: string;
 }
 
 export interface ResolveApiPathOptions {
-	default?: string;
+  default?: string;
 }
 
 const getEnv = (name: string): string | undefined =>
-	typeof process !== "undefined" ? process.env[name] : undefined;
+  typeof process !== "undefined" ? process.env[name] : undefined;
 
 const resolveConfigValue = (
-	ctx: AdapterContext,
-	key: "apiKey" | "apiBase" | "apiPath",
+  ctx: AdapterContext,
+  key: "apiKey" | "apiBase" | "apiPath",
 ): string | undefined => {
-	const val = ctx.config[key];
-	if (!val) return undefined;
-	return typeof val === "function" ? val(ctx) : val;
+  const val = ctx.config[key];
+  if (!val) return undefined;
+  return typeof val === "function" ? val(ctx) : val;
 };
 
 export const resolveApiKey = (
-	ctx: AdapterContext,
-	opts: ResolveApiKeyOptions = {},
+  ctx: AdapterContext,
+  opts: ResolveApiKeyOptions = {},
 ): string | undefined =>
-	resolveConfigValue(ctx, "apiKey") ??
-	(opts.envName ? getEnv(opts.envName) : undefined);
+  resolveConfigValue(ctx, "apiKey") ??
+  (opts.envName ? getEnv(opts.envName) : undefined);
 
 export const resolveApiBase = (
-	ctx: AdapterContext,
-	opts: ResolveApiBaseOptions = {},
+  ctx: AdapterContext,
+  opts: ResolveApiBaseOptions = {},
 ): string | undefined =>
-	resolveConfigValue(ctx, "apiBase") ??
-	(opts.envName ? getEnv(opts.envName) : undefined) ??
-	opts.default;
+  resolveConfigValue(ctx, "apiBase") ??
+  (opts.envName ? getEnv(opts.envName) : undefined) ??
+  opts.default;
 
 export const resolveApiPath = (
-	ctx: AdapterContext,
-	opts: ResolveApiPathOptions = {},
+  ctx: AdapterContext,
+  opts: ResolveApiPathOptions = {},
 ): string | undefined => resolveConfigValue(ctx, "apiPath") ?? opts.default;
