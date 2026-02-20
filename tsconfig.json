@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "ada-pter": ["./packages/ada-pter/src/index.ts"],
+      "@ada-pter/openai": ["./packages/providers/openai/src/index.ts"],
+      "@ada-pter/anthropic": ["./packages/providers/anthropic/src/index.ts"],
+      "@ada-pter/rxjs": ["./packages/integrations/rxjs/src/index.ts"],
+      "@ada-pter/logger": ["./packages/middlewares/logger/src/index.ts"]
+    },
+    "noEmit": true
+  },
+  "include": ["tests/**/*", "packages/*/src/**/*", "packages/*/*/src/**/*"]
+}

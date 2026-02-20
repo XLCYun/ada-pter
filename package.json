@@ -11,7 +11,10 @@
   "scripts": {
     "build": "bun run --filter '*' build",
     "dev": "bun run --filter '*' dev",
-    "test": "bun test",
+    "test": "bun run test:unit",
+    "test:unit": "bun test packages",
+    "test:live": "bun test --conditions=development tests/live",
+    "test:all": "bun run test:unit && bun run test:live",
     "test:cov": "bun test --coverage",
     "test:cov:lcov": "bun test --coverage --coverage-reporter=lcov",
     "test:cov:html": "bun test --coverage --coverage-reporter=lcov && genhtml ./coverage/lcov.info --output-directory ./coverage/html",
@@ -21,6 +24,8 @@
     "format": "biome format --write ."
   },
   "devDependencies": {
+    "ada-pter": "workspace:*",
+    "@ada-pter/openai": "workspace:*",
     "@biomejs/biome": "^2.3.14",
     "tsdown": "^0.20.3",
     "typescript": "^5.9.3",
