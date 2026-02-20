@@ -1,6 +1,6 @@
 {
   "biome.enabled": true,
-  "biome.configurationPath": "${workspaceFolder}/ada-pter/biome.json",
+  "biome.configurationPath": "${workspaceFolder}/biome.json",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit",

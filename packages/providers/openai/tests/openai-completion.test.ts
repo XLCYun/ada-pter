@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import {
   jsonTransformer,
   sseTransformer,
-} from "../packages/ada-pter/src/transformers";
-import { autoProvider } from "../packages/providers/openai/src/completion";
+} from "../../../ada-pter/src/transformers";
+import { autoProvider } from "../src/completion";
 
 describe("@ada-pter/openai completion", () => {
   test("autoProvider.getHandler returns null for unsupported apiType", () => {

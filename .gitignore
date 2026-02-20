@@ -141,3 +141,5 @@ vite.config.ts.timestamp-*
 # Bun
 .bun
 bun.lockb
+
+local-tests/
