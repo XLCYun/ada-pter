@@ -145,6 +145,44 @@ live("live: @ada-pter/openai responses", () => {
   });
 });
 
+live("live: @ada-pter/openai images", () => {
+  const model = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1-mini";
+
+  test("imageGeneration non-stream works with real OpenAI API", async () => {
+    const a = createAdapter().route({ provider: "openai" }, autoProvider);
+
+    const res = await a.imageGeneration({
+      model,
+      prompt: "Draw a small blue cat icon",
+      size: "auto",
+      timeout: 30_000,
+    });
+
+    expect(res).toBeDefined();
+    expect(res.data?.length).toBeGreaterThan(0);
+  }, 60_000);
+
+  test("imageGeneration stream yields chunks", async () => {
+    const a = createAdapter().route({ provider: "openai" }, autoProvider);
+
+    const stream = a.imageGeneration({
+      model,
+      prompt: "Draw a small red cat icon",
+      size: "auto",
+      stream: true,
+      timeout: 30_000,
+    });
+
+    let chunkCount = 0;
+    for await (const chunk of stream) {
+      expect(chunk).toBeDefined();
+      chunkCount += 1;
+    }
+
+    expect(chunkCount).toBeGreaterThan(0);
+  }, 60_000);
+});
+
 if (!canRun) {
   const reasons: string[] = [];
   if (!apiKey) reasons.push("OPENAI_API_KEY");
