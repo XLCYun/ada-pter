@@ -9,6 +9,20 @@ import type {
   CompletionResponse,
   Middleware,
   Provider,
+  ResponseCancelRequest,
+  ResponseCancelResult,
+  ResponseCompactRequest,
+  ResponseCompactResult,
+  ResponseCreateRequest,
+  ResponseCreateResponse,
+  ResponseCreateStreamChunk,
+  ResponseDeleteRequest,
+  ResponseDeleteResult,
+  ResponseInputItemsListRequest,
+  ResponseInputItemsListResponse,
+  ResponseRetrieveRequest,
+  ResponseRetrieveResponse,
+  ResponseRetrieveStreamChunk,
 } from "../types";
 import type { RouteCondition, RouteEntry, RouteResolver } from "../types/route";
 import { compose } from "./compose";
@@ -283,6 +297,76 @@ export class AdaPter {
       "completion",
       params as never,
     ) as Promise<CompletionResponse> | AsyncIterable<CompletionChunk>;
+  }
+
+  createResponse(
+    params: ResponseCreateRequest & { stream: true },
+  ): AsyncIterable<ResponseCreateStreamChunk>;
+  createResponse(
+    params: ResponseCreateRequest & { stream?: false | undefined },
+  ): Promise<ResponseCreateResponse>;
+  createResponse(
+    params: ResponseCreateRequest,
+  ):
+    | Promise<ResponseCreateResponse>
+    | AsyncIterable<ResponseCreateStreamChunk> {
+    return this.execute<ResponseCreateResponse | ResponseCreateStreamChunk>(
+      "response.create",
+      params as never,
+    ) as
+      | Promise<ResponseCreateResponse>
+      | AsyncIterable<ResponseCreateStreamChunk>;
+  }
+
+  cancelResponse(params: ResponseCancelRequest): Promise<ResponseCancelResult> {
+    return this.execute<ResponseCancelResult>(
+      "response.cancel",
+      params as never,
+    ) as unknown as Promise<ResponseCancelResult>;
+  }
+
+  deleteResponse(params: ResponseDeleteRequest): Promise<ResponseDeleteResult> {
+    return this.execute<ResponseDeleteResult>(
+      "response.delete",
+      params as never,
+    ) as unknown as Promise<ResponseDeleteResult>;
+  }
+
+  compactResponse(
+    params: ResponseCompactRequest,
+  ): Promise<ResponseCompactResult> {
+    return this.execute<ResponseCompactResult>(
+      "response.compact",
+      params as never,
+    ) as unknown as Promise<ResponseCompactResult>;
+  }
+
+  retrieveResponse(
+    params: ResponseRetrieveRequest & { stream: true },
+  ): AsyncIterable<ResponseRetrieveStreamChunk>;
+  retrieveResponse(
+    params: ResponseRetrieveRequest & { stream?: false | undefined },
+  ): Promise<ResponseRetrieveResponse>;
+  retrieveResponse(
+    params: ResponseRetrieveRequest,
+  ):
+    | Promise<ResponseRetrieveResponse>
+    | AsyncIterable<ResponseRetrieveStreamChunk> {
+    return this.execute<ResponseRetrieveResponse | ResponseRetrieveStreamChunk>(
+      "response.retrieve",
+      params as never,
+    ) as
+      | Promise<ResponseRetrieveResponse>
+      | AsyncIterable<ResponseRetrieveStreamChunk>;
+  }
+
+  listResponseInputItems(
+    params: ResponseInputItemsListRequest,
+  ): Promise<ResponseInputItemsListResponse> {
+    return this.execute<ResponseInputItemsListResponse>(
+      "response.input_items.list",
+      params as never,
+    ) as unknown as Promise<ResponseInputItemsListResponse>;
   }
 }
 

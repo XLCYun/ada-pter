@@ -14,6 +14,7 @@ import {
 } from "ada-pter";
 import type { ChatCompletionCreateParamsBase } from "ada-pter/types/openai/completions";
 import { OPENAI_BASE } from "./common";
+import { getResponsesHandler } from "./responses";
 
 export const name = "@ada-pter/openai";
 const COMPLETION_PATH = "/chat/completions";
@@ -95,7 +96,9 @@ const streamingCompletionHandler: ApiHandler = {
 export const autoProvider: Provider = {
   name: "openai",
   getHandler(ctx: AdapterContext) {
-    if (ctx.apiType !== "completion") return null;
-    return ctx.config.stream ? streamingCompletionHandler : completionHandler;
+    if (ctx.apiType === "completion") {
+      return ctx.config.stream ? streamingCompletionHandler : completionHandler;
+    }
+    return getResponsesHandler(ctx);
   },
 };

@@ -1,5 +1,7 @@
 import type { AdapterContext } from "./core";
-import type { ChatCompletionCreateParamsBase } from "./openai/completions";
+
+// biome-ignore lint/suspicious/noExplicitAny: string key / any value
+type MapAny = Record<string, any>;
 
 /**
  * Unified configuration type. Contains both framework behavior config and API request parameters.
@@ -8,8 +10,7 @@ import type { ChatCompletionCreateParamsBase } from "./openai/completions";
  *
  * When adding new fields, they MUST be explicitly declared here.
  */
-export interface AdapterConfig
-  extends Partial<Omit<ChatCompletionCreateParamsBase, "model">> {
+export interface AdapterConfig extends MapAny {
   apiKey?: string | ((ctx: AdapterContext) => string);
   apiBase?: string | ((ctx: AdapterContext) => string);
   apiPath?: string | ((ctx: AdapterContext) => string);

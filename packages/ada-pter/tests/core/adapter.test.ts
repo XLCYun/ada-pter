@@ -900,6 +900,133 @@ describe("context fields", () => {
   });
 });
 
+// ─── Responses API methods ────────────────────────────────────────────────
+
+describe("responses API methods", () => {
+  test("non-stream responses methods call correct apiType and return transformed data", async () => {
+    const seenApiTypes: string[] = [];
+
+    const responseByType: Record<string, any> = {
+      "response.create": { id: "resp_create" },
+      "response.cancel": { id: "resp_cancel", status: "cancelled" },
+      "response.delete": { id: "resp_delete", deleted: true },
+      "response.compact": { id: "resp_compact" },
+      "response.retrieve": { id: "resp_retrieve" },
+      "response.input_items.list": { object: "list", data: [] },
+    };
+
+    const provider: Provider = {
+      name: "responses-test",
+      getHandler: (ctx) => {
+        seenApiTypes.push(ctx.apiType);
+        return {
+          getRequestConfig: () => ({
+            url: "https://api.test.com/v1/responses",
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "{}",
+          }),
+          responseTransformers: [
+            async (c) => {
+              c.response.data = responseByType[c.apiType];
+            },
+          ],
+        };
+      },
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, provider);
+
+    const createRes = await a.createResponse({
+      model: "test-model",
+      input: "hello",
+    } as any);
+    const cancelRes = await a.cancelResponse({
+      model: "test-model",
+      response_id: "resp_1",
+    } as any);
+    const deleteRes = await a.deleteResponse({
+      model: "test-model",
+      response_id: "resp_1",
+    } as any);
+    const compactRes = await a.compactResponse({
+      model: "test-model",
+      response_id: "resp_1",
+    } as any);
+    const retrieveRes = await a.retrieveResponse({
+      model: "test-model",
+      response_id: "resp_1",
+    } as any);
+    const listRes = await a.listResponseInputItems({
+      model: "test-model",
+      response_id: "resp_1",
+    } as any);
+
+    expect(createRes).toEqual({ id: "resp_create" });
+    expect(cancelRes).toEqual({ id: "resp_cancel", status: "cancelled" });
+    expect(deleteRes).toEqual({ id: "resp_delete", deleted: true });
+    expect(compactRes).toEqual({ id: "resp_compact" });
+    expect(retrieveRes).toEqual({ id: "resp_retrieve" });
+    expect(listRes).toEqual({ object: "list", data: [] });
+
+    expect(seenApiTypes).toEqual([
+      "response.create",
+      "response.cancel",
+      "response.delete",
+      "response.compact",
+      "response.retrieve",
+      "response.input_items.list",
+    ]);
+  });
+
+  test("createResponse/retrieveResponse return AsyncIterable when stream=true", async () => {
+    const provider: Provider = {
+      name: "responses-stream-test",
+      getHandler: (ctx) => ({
+        getRequestConfig: () => ({
+          url: "https://api.test.com/v1/responses",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        }),
+        responseTransformers: [
+          async (c) => {
+            if (ctx.apiType === "response.create") {
+              c.response.data = makeStream([{ type: "create.chunk" }]);
+              return;
+            }
+            c.response.data = makeStream([{ type: "retrieve.chunk" }]);
+          },
+        ],
+      }),
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, provider);
+
+    const createStream = a.createResponse({
+      model: "test-model",
+      input: "hello",
+      stream: true,
+    } as any);
+    const createChunks: any[] = [];
+    for await (const chunk of createStream as AsyncIterable<any>) {
+      createChunks.push(chunk);
+    }
+    expect(createChunks).toEqual([{ type: "create.chunk" }]);
+
+    const retrieveStream = a.retrieveResponse({
+      model: "test-model",
+      response_id: "resp_1",
+      stream: true,
+    } as any);
+    const retrieveChunks: any[] = [];
+    for await (const chunk of retrieveStream as AsyncIterable<any>) {
+      retrieveChunks.push(chunk);
+    }
+    expect(retrieveChunks).toEqual([{ type: "retrieve.chunk" }]);
+  });
+});
+
 // ─── Multiple API-type configs ────────────────────────────────────────────
 
 describe("multiple API-type configs", () => {

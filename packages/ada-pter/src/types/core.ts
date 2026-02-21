@@ -6,7 +6,15 @@ import type { ApiHandler, Provider } from "./provider";
  * Only 'completion' is available in v1; more will be added as needed.
  * (string & {}) preserves custom extension capability without losing IDE autocompletion.
  */
-export type ApiType = "completion" | (string & {});
+export type ApiType =
+  | "completion"
+  | "response.create"
+  | "response.cancel"
+  | "response.delete"
+  | "response.compact"
+  | "response.retrieve"
+  | "response.input_items.list"
+  | (string & {});
 
 /**
  * HTTP request configuration. Extends the standard RequestInit with a required `url` field.

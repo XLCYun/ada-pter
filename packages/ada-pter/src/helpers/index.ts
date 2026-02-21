@@ -1,4 +1,5 @@
 export { joinPath } from "./path";
+export { buildQuery } from "./query";
 export type {
   ResolveApiBaseOptions,
   ResolveApiKeyOptions,
