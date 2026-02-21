@@ -53,6 +53,8 @@ export type {
   ApiType,
   CompletionRequest,
   CompletionResponse,
+  EmbeddingRequest,
+  EmbeddingResponse,
   MatchPattern,
   Middleware,
   Next,
