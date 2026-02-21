@@ -8,10 +8,16 @@ function createTestContext(
 ): AdapterContext {
   return {
     apiType: "completion",
-    request: {},
-    stream: false,
+    request: { url: "" },
+    response: {},
     config: {},
     state: {},
+    modelId: "openai/gpt-4",
+    providerKey: "openai",
+    model: "gpt-4",
+    normModel: "gpt-4",
+    normProvider: "openai",
+    normModelId: "openai/gpt-4",
     ...overrides,
   };
 }
@@ -119,7 +125,7 @@ describe("compose", () => {
 
     const cache: Middleware = async (ctx, _next) => {
       order.push("cache-hit");
-      ctx.response = { cached: true };
+      ctx.response = { data: { cached: true } };
       // intentionally NOT calling next() — short-circuit
     };
 
@@ -132,7 +138,7 @@ describe("compose", () => {
     await compose([cache, provider])(ctx);
 
     expect(order).toEqual(["cache-hit"]);
-    expect(ctx.response).toEqual({ cached: true });
+    expect(ctx.response).toEqual({ data: { cached: true } });
   });
 
   test("single middleware works correctly", async () => {
@@ -149,20 +155,22 @@ describe("compose", () => {
 
   test("middleware can modify response after next()", async () => {
     const inner: Middleware = async (ctx, next) => {
-      ctx.response = { content: "hello" };
+      ctx.response = { data: { content: "hello" } };
       await next();
     };
 
     const outer: Middleware = async (ctx, next) => {
       await next();
       // Modify response set by inner middleware
-      (ctx.response as Record<string, unknown>).modified = true;
+      (ctx.response.data as Record<string, unknown>).modified = true;
     };
 
     const ctx = createTestContext();
     await compose([outer, inner])(ctx);
 
-    expect(ctx.response).toEqual({ content: "hello", modified: true });
+    expect(ctx.response).toEqual({
+      data: { content: "hello", modified: true },
+    });
   });
 
   test("async middleware is properly awaited", async () => {
