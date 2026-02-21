@@ -9,6 +9,7 @@ import type { ApiHandler, Provider } from "./provider";
 export type ApiType =
   | "completion"
   | "embedding"
+  | "image.generation"
   | "response.create"
   | "response.cancel"
   | "response.delete"
