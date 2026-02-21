@@ -12,7 +12,9 @@
     "build": "bun run --filter '*' build",
     "dev": "bun run --filter '*' dev",
     "test": "bun run test:unit",
-    "test:unit": "bun test packages",
+    "test:unit": "bun run test:unit:bun",
+    "test:unit:bun": "bun test packages",
+    "test:unit:node": "vitest run",
     "test:live": "bun test --conditions=development tests/live",
     "test:all": "bun run test:unit && bun run test:live",
     "test:cov": "bun test --coverage",
@@ -29,6 +31,7 @@
     "@biomejs/biome": "^2.3.14",
     "tsdown": "^0.20.3",
     "typescript": "^5.9.3",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "vitest": "^2.1.9"
   }
 }
