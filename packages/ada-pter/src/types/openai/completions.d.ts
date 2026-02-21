@@ -11,7 +11,8 @@ export declare namespace Shared {
     | "low"
     | "medium"
     | "high"
-    | "xhigh";
+    | "xhigh"
+    | (string & {});
 
   export type FunctionParameters = Record<string, unknown>;
 
@@ -44,7 +45,7 @@ export interface ChatCompletionAudio {
 }
 
 export interface ChatCompletionAudioParam {
-  format: "wav" | "aac" | "mp3" | "flac" | "opus" | "pcm16";
+  format: "wav" | "aac" | "mp3" | "flac" | "opus" | "pcm16" | (string & {});
   voice:
     | (string & {})
     | "alloy"
@@ -56,7 +57,8 @@ export interface ChatCompletionAudioParam {
     | "shimmer"
     | "verse"
     | "marin"
-    | "cedar";
+    | "cedar"
+    | (string & {});
 }
 
 export type ChatCompletionContentPart =
@@ -88,7 +90,7 @@ export interface ChatCompletionContentPartImage {
 export declare namespace ChatCompletionContentPartImage {
   export interface ImageURL {
     url: string;
-    detail?: "auto" | "low" | "high";
+    detail?: "auto" | "low" | "high" | (string & {});
   }
 }
 
@@ -100,7 +102,7 @@ export interface ChatCompletionContentPartInputAudio {
 export declare namespace ChatCompletionContentPartInputAudio {
   export interface InputAudio {
     data: string;
-    format: "wav" | "mp3";
+    format: "wav" | "mp3" | (string & {});
   }
 }
 
@@ -139,7 +141,7 @@ export declare namespace ChatCompletionCustomTool {
     export declare namespace Grammar {
       export interface Grammar {
         definition: string;
-        syntax: "lark" | "regex";
+        syntax: "lark" | "regex" | (string & {});
       }
     }
   }
@@ -257,7 +259,7 @@ export declare namespace ChatCompletionNamedToolChoiceCustom {
 }
 
 export interface ChatCompletionAllowedTools {
-  mode: "auto" | "required";
+  mode: "auto" | "required" | (string & {});
   tools: Array<{ [key: string]: unknown }>;
 }
 
@@ -270,6 +272,7 @@ export type ChatCompletionToolChoiceOption =
   | "none"
   | "auto"
   | "required"
+  | (string & {})
   | ChatCompletionAllowedToolChoice
   | ChatCompletionNamedToolChoice
   | ChatCompletionNamedToolChoiceCustom;
@@ -292,7 +295,11 @@ export interface ChatCompletionCreateParamsBase {
   audio?: ChatCompletionAudioParam | null;
   frequency_penalty?: number | null;
   /** @deprecated */
-  function_call?: "none" | "auto" | ChatCompletionFunctionCallOption;
+  function_call?:
+    | "none"
+    | "auto"
+    | ChatCompletionFunctionCallOption
+    | (string & {});
   /** @deprecated */
   functions?: Array<ChatCompletionCreateParams.Function>;
   logit_bias?: { [key: string]: number } | null;
@@ -301,13 +308,13 @@ export interface ChatCompletionCreateParamsBase {
   /** @deprecated */
   max_tokens?: number | null;
   metadata?: Shared.Metadata | null;
-  modalities?: Array<"text" | "audio"> | null;
+  modalities?: Array<"text" | "audio" | (string & {})> | null;
   n?: number | null;
   parallel_tool_calls?: boolean;
   prediction?: ChatCompletionPredictionContent | null;
   presence_penalty?: number | null;
   prompt_cache_key?: string;
-  prompt_cache_retention?: "in-memory" | "24h" | null;
+  prompt_cache_retention?: "in-memory" | "24h" | (string & {}) | null;
   reasoning_effort?: Shared.ReasoningEffort | null;
   response_format?:
     | Shared.ResponseFormatText
@@ -315,7 +322,14 @@ export interface ChatCompletionCreateParamsBase {
     | Shared.ResponseFormatJSONObject;
   safety_identifier?: string;
   seed?: number | null;
-  service_tier?: "auto" | "default" | "flex" | "scale" | "priority" | null;
+  service_tier?:
+    | "auto"
+    | "default"
+    | "flex"
+    | "scale"
+    | "priority"
+    | (string & {})
+    | null;
   stop?: string | null | Array<string>;
   store?: boolean | null;
   stream?: boolean | null;
@@ -327,7 +341,7 @@ export interface ChatCompletionCreateParamsBase {
   top_p?: number | null;
   /** @deprecated */
   user?: string;
-  verbosity?: "low" | "medium" | "high" | null;
+  verbosity?: "low" | "medium" | "high" | (string & {}) | null;
   web_search_options?: ChatCompletionCreateParams.WebSearchOptions;
 }
 
@@ -339,7 +353,7 @@ export declare namespace ChatCompletionCreateParams {
   }
 
   export interface WebSearchOptions {
-    search_context_size?: "low" | "medium" | "high";
+    search_context_size?: "low" | "medium" | "high" | (string & {});
     user_location?: WebSearchOptions.UserLocation | null;
   }
 
@@ -396,7 +410,14 @@ export interface ChatCompletion {
   created: number;
   model: string;
   object: "chat.completion";
-  service_tier?: "auto" | "default" | "flex" | "scale" | "priority" | null;
+  service_tier?:
+    | "auto"
+    | "default"
+    | "flex"
+    | "scale"
+    | "priority"
+    | (string & {})
+    | null;
   system_fingerprint?: string;
   usage?: CompletionUsage;
 }
@@ -408,7 +429,8 @@ export declare namespace ChatCompletion {
       | "length"
       | "tool_calls"
       | "content_filter"
-      | "function_call";
+      | "function_call"
+      | (string & {});
     index: number;
     logprobs: Choice.Logprobs | null;
     message: ChatCompletionMessage;
@@ -474,7 +496,14 @@ export interface ChatCompletionChunk {
   created: number;
   model: string;
   object: "chat.completion.chunk";
-  service_tier?: "auto" | "default" | "flex" | "scale" | "priority" | null;
+  service_tier?:
+    | "auto"
+    | "default"
+    | "flex"
+    | "scale"
+    | "priority"
+    | (string & {})
+    | null;
   system_fingerprint?: string;
   usage?: CompletionUsage | null;
 }
@@ -488,6 +517,7 @@ export declare namespace ChatCompletionChunk {
       | "tool_calls"
       | "content_filter"
       | "function_call"
+      | (string & {})
       | null;
     index: number;
     logprobs?: Choice.Logprobs | null;
@@ -498,7 +528,13 @@ export declare namespace ChatCompletionChunk {
       content?: string | null;
       function_call?: Delta.FunctionCall;
       refusal?: string | null;
-      role?: "developer" | "system" | "user" | "assistant" | "tool";
+      role?:
+        | "developer"
+        | "system"
+        | "user"
+        | "assistant"
+        | "tool"
+        | (string & {});
       tool_calls?: Array<Delta.ToolCall>;
     }
 
@@ -512,7 +548,7 @@ export declare namespace ChatCompletionChunk {
         index: number;
         id?: string;
         function?: ToolCall.Function;
-        type?: "function";
+        type?: "function" | (string & {});
       }
 
       export declare namespace ToolCall {
