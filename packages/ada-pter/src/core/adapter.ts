@@ -7,6 +7,8 @@ import type {
   CompletionChunk,
   CompletionRequest,
   CompletionResponse,
+  EmbeddingRequest,
+  EmbeddingResponse,
   Middleware,
   Provider,
   ResponseCancelRequest,
@@ -297,6 +299,13 @@ export class AdaPter {
       "completion",
       params as never,
     ) as Promise<CompletionResponse> | AsyncIterable<CompletionChunk>;
+  }
+
+  embedding(params: EmbeddingRequest): Promise<EmbeddingResponse> {
+    return this.execute<EmbeddingResponse>("embedding", {
+      ...params,
+      stream: false,
+    });
   }
 
   createResponse(
