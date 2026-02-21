@@ -9,6 +9,9 @@ import type {
   CompletionResponse,
   EmbeddingRequest,
   EmbeddingResponse,
+  ImageGenerationRequest,
+  ImageGenerationResponse,
+  ImageGenerationStreamChunk,
   Middleware,
   Provider,
   ResponseCancelRequest,
@@ -26,6 +29,7 @@ import type {
   ResponseRetrieveResponse,
   ResponseRetrieveStreamChunk,
 } from "../types";
+
 import type { RouteCondition, RouteEntry, RouteResolver } from "../types/route";
 import { compose } from "./compose";
 import { deepMerge } from "./config";
@@ -306,6 +310,24 @@ export class AdaPter {
       ...params,
       stream: false,
     });
+  }
+  imageGeneration(
+    params: ImageGenerationRequest & { stream: true },
+  ): AsyncIterable<ImageGenerationStreamChunk>;
+  imageGeneration(
+    params: ImageGenerationRequest & { stream?: false | undefined },
+  ): Promise<ImageGenerationResponse>;
+  imageGeneration(
+    params: ImageGenerationRequest,
+  ):
+    | Promise<ImageGenerationResponse>
+    | AsyncIterable<ImageGenerationStreamChunk> {
+    return this.execute<ImageGenerationResponse | ImageGenerationStreamChunk>(
+      "image.generation",
+      params as never,
+    ) as
+      | Promise<ImageGenerationResponse>
+      | AsyncIterable<ImageGenerationStreamChunk>;
   }
 
   createResponse(
