@@ -15,6 +15,7 @@ import {
 import type { ChatCompletionCreateParamsBase } from "ada-pter/types/openai/completions";
 import { OPENAI_BASE } from "./common";
 import { embeddingHandler } from "./embedding";
+import { getImagesHandler } from "./images";
 import { getResponsesHandler } from "./responses";
 
 export const name = "@ada-pter/openai";
@@ -109,6 +110,8 @@ export const autoProvider: Provider = {
       default:
         break;
     }
+    const imageHandler = getImagesHandler(ctx);
+    if (imageHandler) return imageHandler;
     return getResponsesHandler(ctx);
   },
 };
