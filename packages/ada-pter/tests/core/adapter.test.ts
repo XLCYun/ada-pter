@@ -1071,3 +1071,135 @@ describe("fluent chaining", () => {
     expect(result).toBe(a);
   });
 });
+
+// ─── API wrapper passthroughs ─────────────────────────────────────────────
+
+describe("api wrappers", () => {
+  test("embedding enforces non-stream and passes params", async () => {
+    const a = new AdaPter();
+    const executeMock = mock((apiType: any, params: any) => {
+      expect(apiType).toBe("embedding");
+      expect(params).toEqual({ model: "m-embed", input: "hi", stream: false });
+      return Promise.resolve("embed-res" as any);
+    });
+    (a as any).execute = executeMock;
+
+    const res = await a.embedding({ model: "m-embed", input: "hi" } as any);
+
+    expect(res).toBe("embed-res");
+    expect(executeMock).toHaveBeenCalledWith("embedding", {
+      model: "m-embed",
+      input: "hi",
+      stream: false,
+    });
+  });
+
+  test("imageGeneration forwards to execute for stream and non-stream", async () => {
+    const a = new AdaPter();
+    const streamChunks = [{ id: "c1" }];
+    const seenTypes: string[] = [];
+    const seenParams: any[] = [];
+    const executeMock = mock((apiType: any, params: any) => {
+      seenTypes.push(apiType);
+      seenParams.push(params);
+      return params.stream
+        ? makeStream(streamChunks)
+        : Promise.resolve({ id: "img" } as any);
+    });
+    (a as any).execute = executeMock;
+
+    const nonStream = await a.imageGeneration({
+      model: "m-img",
+      prompt: "p",
+      stream: false,
+    } as any);
+    expect(nonStream).toEqual({ id: "img" });
+
+    const received: any[] = [];
+    const streamResult = a.imageGeneration({
+      model: "m-img",
+      prompt: "p",
+      stream: true,
+    } as any) as AsyncIterable<any>;
+    for await (const chunk of streamResult) received.push(chunk);
+    expect(received).toEqual(streamChunks);
+
+    expect(seenTypes).toEqual(["image.generation", "image.generation"]);
+    expect(seenParams).toEqual([
+      { model: "m-img", prompt: "p", stream: false },
+      { model: "m-img", prompt: "p", stream: true },
+    ]);
+  });
+
+  test("transcription forwards params", async () => {
+    const a = new AdaPter();
+    const seenTypes: string[] = [];
+    const seenParams: any[] = [];
+    const executeMock = mock((apiType: any, params: any) => {
+      seenTypes.push(apiType);
+      seenParams.push(params);
+      return params.stream
+        ? makeStream([{ text: "chunk" }])
+        : Promise.resolve({ text: "done" } as any);
+    });
+    (a as any).execute = executeMock;
+
+    const res = await a.transcription({
+      model: "m-trans",
+      file: "f",
+      stream: false,
+    } as any);
+    expect(res).toEqual({ text: "done" });
+
+    const chunks: any[] = [];
+    const streamRes = a.transcription({
+      model: "m-trans",
+      file: "f",
+      stream: true,
+    } as any) as AsyncIterable<any>;
+    for await (const c of streamRes) chunks.push(c);
+    expect(chunks).toEqual([{ text: "chunk" }]);
+
+    expect(seenTypes).toEqual(["transcription", "transcription"]);
+    expect(seenParams).toEqual([
+      { model: "m-trans", file: "f", stream: false },
+      { model: "m-trans", file: "f", stream: true },
+    ]);
+  });
+
+  test("speech forwards params", async () => {
+    const a = new AdaPter();
+    const seenTypes: string[] = [];
+    const seenParams: any[] = [];
+    const executeMock = mock((apiType: any, params: any) => {
+      seenTypes.push(apiType);
+      seenParams.push(params);
+      return params.stream
+        ? makeStream([{ audio: "chunk" }])
+        : Promise.resolve({ audio: "done" } as any);
+    });
+    (a as any).execute = executeMock;
+
+    const res = await a.speech({
+      model: "m-speech",
+      input: "hello",
+      stream: false,
+    } as any);
+    expect(res).toEqual({ audio: "done" });
+
+    const chunks: any[] = [];
+    const streamRes = a.speech({
+      model: "m-speech",
+      input: "hello",
+      stream: true,
+    } as any) as AsyncIterable<any>;
+    for await (const c of streamRes) chunks.push(c);
+    expect(chunks).toEqual([{ audio: "chunk" }]);
+
+    expect(seenTypes).toEqual(["speech", "speech"]);
+    expect(seenParams).toEqual([
+      { model: "m-speech", input: "hello", stream: false },
+      { model: "m-speech", input: "hello", stream: true },
+    ]);
+  });
+});

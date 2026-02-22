@@ -1,5 +1,5 @@
 /// <reference path="../bun-test.d.ts" />
-import { describe, expect, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { AutoLoader } from "../../src/core/auto-loader";
 import type { AdapterContext } from "../../src/types/core";
 import type { ApiHandler, Provider } from "../../src/types/provider";
@@ -180,6 +180,19 @@ describe("AutoLoader dynamic import behavior", () => {
     const result = await loader.resolve(ctx);
     expect(result).toBe(provider);
     expect(calls).toEqual(["@ada-pter/openai"]);
+  });
+
+  test("uses default importer when importer option is omitted", async () => {
+    const provider = makeProvider("fake");
+    const bunMock = mock as unknown as {
+      module: (name: string, factory: () => ImporterResult) => void;
+    };
+    bunMock.module("@ada-pter/fake", () => ({ autoProvider: provider }));
+    const loader = new AutoLoader();
+    const ctx = makeCtx({ providerKey: "fake", normProvider: "fake" });
+
+    const result = await loader.resolve(ctx);
+    expect(result).toBe(provider);
   });
 });
 

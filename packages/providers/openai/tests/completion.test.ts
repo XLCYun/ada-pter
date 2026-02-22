@@ -159,4 +159,32 @@ describe("@ada-pter/openai completion", () => {
 
     expect(req.url).toBe("https://api.openai.com/v1/chat/completions");
   });
+
+  test("getRequestConfig throws when base and path are missing", () => {
+    const ctx = {
+      apiType: "completion",
+      modelId: "openai/gpt-4",
+      providerKey: "openai",
+      model: "gpt-4",
+      normModel: "gpt-4",
+      normProvider: "openai",
+      normModelId: "openai/gpt-4",
+      request: {},
+      response: {},
+      state: {},
+      config: {
+        apiKey: "sk-test",
+        apiBase: "",
+        apiPath: "",
+        stream: false,
+        messages: [],
+      },
+    } as any;
+
+    const handler = autoProvider.getHandler(ctx)!;
+
+    expect(() => handler.getRequestConfig(ctx)).toThrow(
+      "No base URL or path provided",
+    );
+  });
 });

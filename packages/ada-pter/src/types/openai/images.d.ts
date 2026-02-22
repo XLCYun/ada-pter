@@ -1,12 +1,22 @@
 // Standalone type definitions for images.generate
 
 export interface ImagesGenerateAPI {
-  generate(body: ImageGenerateParamsNonStreaming, options?: RequestOptions): APIPromise<ImagesResponse>;
-  generate(body: ImageGenerateParamsStreaming, options?: RequestOptions): APIPromise<Stream<ImageGenStreamEvent>>;
-  generate(body: ImageGenerateParamsBase, options?: RequestOptions): APIPromise<Stream<ImageGenStreamEvent> | ImagesResponse>;
-  generate(body: ImageGenerateParams, options?: RequestOptions):
-    | APIPromise<ImagesResponse>
-    | APIPromise<Stream<ImageGenStreamEvent>>;
+  generate(
+    body: ImageGenerateParamsNonStreaming,
+    options?: RequestOptions,
+  ): APIPromise<ImagesResponse>;
+  generate(
+    body: ImageGenerateParamsStreaming,
+    options?: RequestOptions,
+  ): APIPromise<Stream<ImageGenStreamEvent>>;
+  generate(
+    body: ImageGenerateParamsBase,
+    options?: RequestOptions,
+  ): APIPromise<Stream<ImageGenStreamEvent> | ImagesResponse>;
+  generate(
+    body: ImageGenerateParams,
+    options?: RequestOptions,
+  ): APIPromise<ImagesResponse> | APIPromise<Stream<ImageGenStreamEvent>>;
 }
 
 export type APIPromise<T> = Promise<T>;
@@ -27,12 +37,12 @@ export interface Image {
 
 export interface ImageGenCompletedEvent {
   b64_json: string;
-  background: 'transparent' | 'opaque' | 'auto' | (string & {});
+  background: "transparent" | "opaque" | "auto" | (string & {});
   created_at: number;
-  output_format: 'png' | 'webp' | 'jpeg' | (string & {});
-  quality: 'low' | 'medium' | 'high' | 'auto' | (string & {});
-  size: '1024x1024' | '1024x1536' | '1536x1024' | 'auto' | (string & {});
-  type: 'image_generation.completed';
+  output_format: "png" | "webp" | "jpeg" | (string & {});
+  quality: "low" | "medium" | "high" | "auto" | (string & {});
+  size: "1024x1024" | "1024x1536" | "1536x1024" | "auto" | (string & {});
+  type: "image_generation.completed";
   usage: ImageGenCompletedEventUsage;
 }
 
@@ -50,26 +60,28 @@ export interface ImageGenCompletedEventInputTokensDetails {
 
 export interface ImageGenPartialImageEvent {
   b64_json: string;
-  background: 'transparent' | 'opaque' | 'auto' | (string & {});
+  background: "transparent" | "opaque" | "auto" | (string & {});
   created_at: number;
-  output_format: 'png' | 'webp' | 'jpeg' | (string & {});
+  output_format: "png" | "webp" | "jpeg" | (string & {});
   partial_image_index: number;
-  quality: 'low' | 'medium' | 'high' | 'auto' | (string & {});
-  size: '1024x1024' | '1024x1536' | '1536x1024' | 'auto' | (string & {});
-  type: 'image_generation.partial_image';
+  quality: "low" | "medium" | "high" | "auto" | (string & {});
+  size: "1024x1024" | "1024x1536" | "1536x1024" | "auto" | (string & {});
+  type: "image_generation.partial_image";
 }
 
-export type ImageGenStreamEvent = ImageGenPartialImageEvent | ImageGenCompletedEvent;
+export type ImageGenStreamEvent =
+  | ImageGenPartialImageEvent
+  | ImageGenCompletedEvent;
 
 export type ImageModel = string;
 
 export interface ImagesResponse {
   created: number;
-  background?: 'transparent' | 'opaque' | (string & {});
+  background?: "transparent" | "opaque" | (string & {});
   data?: Array<Image>;
-  output_format?: 'png' | 'webp' | 'jpeg' | (string & {});
-  quality?: 'low' | 'medium' | 'high' | (string & {});
-  size?: '1024x1024' | '1024x1536' | '1536x1024' | (string & {});
+  output_format?: "png" | "webp" | "jpeg" | (string & {});
+  quality?: "low" | "medium" | "high" | (string & {});
+  size?: "1024x1024" | "1024x1536" | "1536x1024" | (string & {});
   usage?: ImagesResponseUsage;
 }
 
@@ -91,36 +103,47 @@ export interface ImagesResponseOutputTokensDetails {
   text_tokens: number;
 }
 
-export type ImageGenerateParams = ImageGenerateParamsNonStreaming | ImageGenerateParamsStreaming;
+export type ImageGenerateParams =
+  | ImageGenerateParamsNonStreaming
+  | ImageGenerateParamsStreaming;
 
 export interface ImageGenerateParamsBase {
   prompt: string;
-  background?: 'transparent' | 'opaque' | 'auto' | (string & {}) | null;
+  background?: "transparent" | "opaque" | "auto" | (string & {}) | null;
   model?: (string & {}) | ImageModel | null;
-  moderation?: 'low' | 'auto' | (string & {}) | null;
+  moderation?: "low" | "auto" | (string & {}) | null;
   n?: number | null;
   output_compression?: number | null;
-  output_format?: 'png' | 'jpeg' | 'webp' | (string & {}) | null;
+  output_format?: "png" | "jpeg" | "webp" | (string & {}) | null;
   partial_images?: number | null;
-  quality?: 'standard' | 'hd' | 'low' | 'medium' | 'high' | 'auto' | (string & {}) | null;
-  response_format?: 'url' | 'b64_json' | (string & {}) | null;
+  quality?:
+    | "standard"
+    | "hd"
+    | "low"
+    | "medium"
+    | "high"
+    | "auto"
+    | (string & {})
+    | null;
+  response_format?: "url" | "b64_json" | (string & {}) | null;
   size?:
-    | 'auto'
-    | '1024x1024'
-    | '1536x1024'
-    | '1024x1536'
-    | '256x256'
-    | '512x512'
-    | '1792x1024'
-    | '1024x1792'
+    | "auto"
+    | "1024x1024"
+    | "1536x1024"
+    | "1024x1536"
+    | "256x256"
+    | "512x512"
+    | "1792x1024"
+    | "1024x1792"
     | (string & {})
     | null;
   stream?: boolean | null;
-  style?: 'vivid' | 'natural' | (string & {}) | null;
+  style?: "vivid" | "natural" | (string & {}) | null;
   user?: string;
 }
 
-export interface ImageGenerateParamsNonStreaming extends ImageGenerateParamsBase {
+export interface ImageGenerateParamsNonStreaming
+  extends ImageGenerateParamsBase {
   stream?: false | null;
 }
 

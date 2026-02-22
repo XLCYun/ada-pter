@@ -80,6 +80,49 @@ afterAll(() => {
 });
 
 describe("RetryController", () => {
+  test("sleepWithSignal throws immediately when already aborted", async () => {
+    const ctx = makeCtx();
+    const retry = new RetryController(ctx);
+
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(
+      retry["sleepWithSignal"](10, controller.signal as AbortSignal),
+    ).rejects.toHaveProperty("name", "AbortError");
+  });
+
+  test("sleepWithSignal rejects when aborted during wait", async () => {
+    const ctx = makeCtx();
+    const retry = new RetryController(ctx);
+    const controller = new AbortController();
+
+    const promise = retry["sleepWithSignal"](1, controller.signal);
+    controller.abort();
+
+    await expect(promise).rejects.toHaveProperty("name", "AbortError");
+  });
+
+  test("sleepWithSignal resolves and removes abort listener when timer completes", async () => {
+    const ctx = makeCtx();
+    const retry = new RetryController(ctx);
+
+    const removeEventListener = mock();
+    let capturedHandler: (() => void) | undefined;
+
+    const signal = {
+      aborted: false,
+      addEventListener: (_event: string, handler: () => void) => {
+        capturedHandler = handler;
+      },
+      removeEventListener,
+    } as unknown as AbortSignal;
+
+    await retry["sleepWithSignal"](1, signal);
+
+    expect(removeEventListener).toHaveBeenCalledWith("abort", capturedHandler);
+  });
+
   test("returns on first successful attempt", async () => {
     const res = new Response("ok", { status: 200 });
     mockFetch.mockResolvedValueOnce(res);
