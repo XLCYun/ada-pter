@@ -9,7 +9,7 @@
 - Implemented: `Provider` / `ApiHandler` (`getRequestConfig` + `responseTransformers`)
 - Implemented: built-in `jsonTransformer` / `sseTransformer` / `autoResponseTransformers`
 - Implemented: `@ada-pter/openai` completion and streaming completion (also exports `autoProvider`)
-- Implemented API: `completion` only
+- Implemented APIs: `completion`, `embedding`, `image.generation`, `transcription`, `speech`, and OpenAI Responses (`response.create/retrieve/cancel/delete/compact/input_items.list`)
 - Not yet implemented (fields exist in types, executor not wired yet): request-level retry and timeout/signal merge
 - Not yet implemented: additional APIs such as embedding/audio/image
 

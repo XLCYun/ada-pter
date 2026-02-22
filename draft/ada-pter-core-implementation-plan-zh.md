@@ -9,7 +9,7 @@
 - 已实现：`Provider` / `ApiHandler`（`getRequestConfig` + `responseTransformers`）
 - 已实现：内置 `jsonTransformer` / `sseTransformer` / `autoResponseTransformers`
 - 已实现：`@ada-pter/openai` 的 completion 与 stream completion（并导出 `autoProvider`）
-- 已实现 API：仅 `completion`
+- 已实现 API：`completion`、`embedding`、`image.generation`、`transcription`、`speech`，以及 OpenAI Responses（`response.create/retrieve/cancel/delete/compact/input_items.list`）
 - 未实现（类型有字段，但执行器尚未接入）：request 级 retry、timeout/signal 合并
 - 未实现：embedding/audio/image 等更多 API 方法
 
