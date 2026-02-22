@@ -1,6 +1,6 @@
-import { ProviderError, TimeoutError } from "../errors";
 import { autoResponseTransformers } from "../transformers/index";
 import type { Middleware } from "../types/core";
+import { RetryController } from "./retry";
 
 /**
  * Create the internal request middleware that is automatically appended
@@ -18,47 +18,21 @@ import type { Middleware } from "../types/core";
  */
 export function createRequestMiddleware(): Middleware {
   return async (ctx) => {
-    const { url, ...init } = ctx.request;
+    const retry = new RetryController(ctx);
+    await retry.run(ctx.request, async (res) => {
+      ctx.response.raw = res;
 
-    let res: Response;
-    try {
-      res = await fetch(url, init);
-    } catch (err) {
-      // Normalize timeout aborts: if composed signal aborted due to timeout, throw TimeoutError
-      if (ctx.signal?.aborted) {
-        const reason = (ctx.signal as AbortSignal).reason;
-        const timeout = ctx.config.timeout;
-        const isTimeoutReason =
-          (typeof reason === "object" && reason?.name === "TimeoutError") ||
-          (typeof reason === "string" &&
-            reason.toLowerCase().includes("timeout"));
-        if (timeout && Number.isFinite(timeout) && isTimeoutReason) {
-          throw new TimeoutError(timeout);
-        }
+      const handler = ctx.handler;
+      if (!handler) throw new Error("[request] no handler found"); // should not happen
+
+      const transformers =
+        handler.responseTransformers.length === 0
+          ? autoResponseTransformers
+          : handler.responseTransformers;
+
+      for (const transformer of transformers) {
+        await transformer(ctx);
       }
-      throw err;
-    }
-    ctx.response.raw = res;
-
-    if (!res.ok) {
-      const provider = ctx.provider;
-      throw new ProviderError(
-        provider?.name ?? "unknown",
-        res.status,
-        await res.text(),
-      );
-    }
-
-    const handler = ctx.handler;
-    if (!handler) throw new Error("[request] no handler found"); // should not happen
-
-    const transformers =
-      handler.responseTransformers.length === 0
-        ? autoResponseTransformers
-        : handler.responseTransformers;
-
-    for (const transformer of transformers) {
-      await transformer(ctx);
-    }
+    });
   };
 }
