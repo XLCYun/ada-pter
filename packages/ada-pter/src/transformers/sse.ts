@@ -36,6 +36,9 @@ async function* sseDataIterator(
       buffer += decoder.decode(value, { stream: true });
 
       while (true) {
+        if (buffer.includes("\r\n\r\n")) {
+          buffer = buffer.replaceAll("\r\n\r\n", "\n\n");
+        }
         const idx = buffer.indexOf("\n\n");
         if (idx === -1) break;
 
