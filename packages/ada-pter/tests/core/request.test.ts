@@ -2,6 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { createRequestMiddleware } from "../../src/core/request";
+import { TimeoutError } from "../../src/errors";
 import type { AdapterContext } from "../../src/types/core";
 import type { ApiHandler, Provider } from "../../src/types/provider";
 
@@ -401,6 +402,47 @@ describe("request middleware: execution", () => {
 
     await expect(mw(ctx, async () => {})).rejects.toBe(networkErr);
     expect(ctx.response.raw).toBeUndefined();
+  });
+
+  test("translates timeout abort into TimeoutError when signal timed out", async () => {
+    const abortErr = new DOMException(
+      "The operation was aborted.",
+      "AbortError",
+    );
+    mockFetch.mockImplementationOnce(() => Promise.reject(abortErr));
+
+    const mw = createRequestMiddleware();
+    const timeoutMs = 1234;
+    const controller = new AbortController();
+    controller.abort(new DOMException("timed out", "TimeoutError"));
+
+    const ctx = makeCtx({
+      config: { timeout: timeoutMs },
+      signal: controller.signal,
+    });
+
+    const err = await mw(ctx, async () => {}).catch((e) => e);
+    expect(err).toBeInstanceOf(TimeoutError);
+    expect(err.timeout).toBe(timeoutMs);
+  });
+
+  test("preserves non-timeout abort reasons", async () => {
+    const abortErr = new DOMException(
+      "The operation was aborted.",
+      "AbortError",
+    );
+    mockFetch.mockImplementationOnce(() => Promise.reject(abortErr));
+
+    const mw = createRequestMiddleware();
+    const controller = new AbortController();
+    controller.abort(new DOMException("user cancel", "AbortError"));
+
+    const ctx = makeCtx({
+      config: {},
+      signal: controller.signal,
+    });
+
+    await expect(mw(ctx, async () => {})).rejects.toBe(abortErr);
   });
 
   test("non-ok fetch still saves raw Response to ctx.response.raw", async () => {
