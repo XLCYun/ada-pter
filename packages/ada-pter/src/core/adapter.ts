@@ -28,6 +28,9 @@ import type {
   ResponseRetrieveRequest,
   ResponseRetrieveResponse,
   ResponseRetrieveStreamChunk,
+  TranscriptionRequest,
+  TranscriptionResponse,
+  TranscriptionStreamChunk,
 } from "../types";
 
 import type { RouteCondition, RouteEntry, RouteResolver } from "../types/route";
@@ -263,13 +266,14 @@ export class AdaPter {
 
     const mergedRequest = { ...ctx.request, ...handlerConfig };
     const headers = new Headers(mergedRequest.headers);
+    const isFormDataBody = mergedRequest.body instanceof FormData;
 
-    // ensure has content-type, default to application/json
-    if (!getContentType(headers)) {
+    // ensure has content-type when not FormData; let runtime set boundary for FormData
+    if (!getContentType(headers) && !isFormDataBody) {
       headers.set("Content-Type", "application/json");
     }
 
-    if (hasJsonContentType(headers)) {
+    if (hasJsonContentType(headers) && !isFormDataBody) {
       const body = mergedRequest.body;
       if (body != null && typeof body !== "string") {
         mergedRequest.body = JSON.stringify(body);
@@ -328,6 +332,23 @@ export class AdaPter {
     ) as
       | Promise<ImageGenerationResponse>
       | AsyncIterable<ImageGenerationStreamChunk>;
+  }
+
+  transcription(
+    params: TranscriptionRequest & { stream: true },
+  ): AsyncIterable<TranscriptionStreamChunk>;
+  transcription(
+    params: TranscriptionRequest & { stream?: false | null | undefined },
+  ): Promise<TranscriptionResponse>;
+  transcription(
+    params: TranscriptionRequest,
+  ): Promise<TranscriptionResponse> | AsyncIterable<TranscriptionStreamChunk> {
+    return this.execute<TranscriptionResponse | TranscriptionStreamChunk>(
+      "transcription",
+      params as never,
+    ) as
+      | Promise<TranscriptionResponse>
+      | AsyncIterable<TranscriptionStreamChunk>;
   }
 
   createResponse(
