@@ -37,6 +37,9 @@ export interface AdapterConfig extends MapAny {
   /** Base delay for retries in milliseconds. Actual delay = baseDelay * 2^attempt (exponential backoff). Default: 1000. */
   retryDelay?: number;
 
+  /** Maximum delay for a single retry wait (ms). When unset, no cap is applied. */
+  maxRetryDelay?: number;
+
   /** Abort signal for cancellation. */
   signal?: AbortSignal;
 }

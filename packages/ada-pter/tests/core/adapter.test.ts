@@ -434,6 +434,7 @@ describe("model fallback", () => {
     const res = await a.completion({
       model: ["bad-model", "good-model"],
       messages: [],
+      maxRetries: 0,
     });
 
     expect(callCount).toBe(2);
