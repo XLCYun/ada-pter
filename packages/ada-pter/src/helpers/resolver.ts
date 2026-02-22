@@ -21,7 +21,6 @@ const resolveConfigValue = (
   key: "apiKey" | "apiBase" | "apiPath",
 ): string | undefined => {
   const val = ctx.config[key];
-  if (!val) return undefined;
   return typeof val === "function" ? val(ctx) : val;
 };
 
