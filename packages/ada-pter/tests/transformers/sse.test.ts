@@ -150,4 +150,27 @@ describe("SSE transformer", () => {
       { another: "valid", object: true },
     ]);
   });
+
+  test("normalizes CRLF delimiters between events", async () => {
+    const transformer = createSseTransformer();
+
+    const sseBody = ['data: {"a":1}\r\n\r\n', 'data: {"b":2}\r\n\r\n'].join("");
+
+    const response = new Response(sseBody, {
+      status: 200,
+      headers: { "Content-Type": "text/event-stream" },
+    });
+
+    const ctx = makeCtx({
+      response: { raw: response },
+    });
+
+    await transformer(ctx);
+
+    const stream = ctx.response.data as AsyncIterable<unknown>;
+    const out: unknown[] = [];
+    for await (const v of stream) out.push(v);
+
+    expect(out).toEqual([{ a: 1 }, { b: 2 }]);
+  });
 });
