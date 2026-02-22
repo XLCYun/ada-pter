@@ -10,7 +10,8 @@
 - 已实现：内置 `jsonTransformer` / `sseTransformer` / `autoResponseTransformers`
 - 已实现：`@ada-pter/openai` 的 completion 与 stream completion（并导出 `autoProvider`）
 - 已实现 API：`completion`、`embedding`、`image.generation`、`transcription`、`speech`，以及 OpenAI Responses（`response.create/retrieve/cancel/delete/compact/input_items.list`）
-- 未实现（类型有字段，但执行器尚未接入）：request 级 retry、timeout/signal 合并
+- 已实现：request 级 retry（`RetryController`，位于 `core/request.ts`，只重试 `fetch()`，不会重跑中间件链）
+- 已实现：timeout + signal 合并（位于 `core/adapter.ts`，通过 `AbortSignal.timeout()` + `AbortSignal.any()` 合成，并写入 `ctx.signal`/`ctx.request.signal`）
 - 未实现：embedding/audio/image 等更多 API 方法
 
 ## 2. Monorepo 结构（现状）
@@ -115,6 +116,19 @@ type RouteEntry =
 4. 跑中间件：`[...userMiddlewares, createRequestMiddleware()]`
 5. request 中间件执行 `fetch`，写入 `ctx.response.raw`，再串行执行 transformers 写 `ctx.response.data`
 6. 出错时如有下一个 model，触发 `onFallback(error, from, to)`
+
+retry / timeout / signal（当前实现）:
+
+- `defaults.ts` 提供默认值：`maxRetries: 2`、`retryDelay: 200`。
+- `createContext()` 负责把 `config.timeout` 与 `config.signal` 合成为一个运行时 `AbortSignal`：
+  - timeout：`AbortSignal.timeout(timeoutMs)`（仅当配置了 `timeout`）
+  - cancel：用户传入的 `config.signal`
+  - 二者同时存在时用 `AbortSignal.any([...])` 合并
+  - 合并结果写入 `ctx.signal`，并透传到 `ctx.request.signal`
+- `createRequestMiddleware()` 内通过 `RetryController(ctx)` 执行 request-level retry:
+  - 对部分瞬态状态码（如 `429/5xx`）做重试，指数退避 + jitter；`429/503` 支持 `Retry-After`
+  - 最终失败或不可重试状态码抛 `ProviderError`
+  - timeout 触发的 abort 会转换为 `TimeoutError(timeoutMs)`；非 timeout 的 abort reason 会保留
 
 ## 6. 路由链语义
 

@@ -10,7 +10,8 @@
 - Implemented: built-in `jsonTransformer` / `sseTransformer` / `autoResponseTransformers`
 - Implemented: `@ada-pter/openai` completion and streaming completion (also exports `autoProvider`)
 - Implemented APIs: `completion`, `embedding`, `image.generation`, `transcription`, `speech`, and OpenAI Responses (`response.create/retrieve/cancel/delete/compact/input_items.list`)
-- Not yet implemented (fields exist in types, executor not wired yet): request-level retry and timeout/signal merge
+- Implemented: request-level retry (`RetryController`) in `core/request.ts` (retries `fetch()` only; does not re-run middleware chain)
+- Implemented: timeout + signal composition in `core/adapter.ts` via `AbortSignal.timeout()` + `AbortSignal.any()`, propagated into `ctx.signal` and `ctx.request.signal`
 - Not yet implemented: additional APIs such as embedding/audio/image
 
 ## 2. Monorepo Structure (Current)
@@ -115,6 +116,20 @@ type RouteEntry =
 4. Run middleware pipeline: `[...userMiddlewares, createRequestMiddleware()]`
 5. Request middleware performs `fetch`, writes result to `ctx.response.raw`, then executes transformers serially into `ctx.response.data`
 6. If an error occurs and there is a next model, trigger `onFallback(error, from, to)`
+
+Retry / timeout / signal wiring (current code):
+
+- `defaults.ts` provides framework defaults: `maxRetries: 2`, `retryDelay: 200`.
+- `adapter.createContext()` composes a single runtime `AbortSignal`:
+  - user cancellation: `config.signal`
+  - timeout: `AbortSignal.timeout(config.timeout)` (when `timeout` is set)
+  - composed via `AbortSignal.any([...])` when both are present
+  - stored on `ctx.signal` and copied into `ctx.request.signal`
+- `createRequestMiddleware()` instantiates `RetryController(ctx)` and delegates the fetch loop to it.
+- Retry behavior:
+  - retries transient HTTP statuses (e.g. `429/5xx`) with exponential backoff + jitter; honors `Retry-After` for `429/503`
+  - on final attempt or non-retryable status, throws `ProviderError`
+  - when the composed signal aborts due to timeout, throws `TimeoutError(timeoutMs)`; non-timeout abort reasons are preserved
 
 ## 6. Routing Chain Semantics
 

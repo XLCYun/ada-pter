@@ -194,7 +194,7 @@ Benefits of unified executor:
 
 - unified error handling (4xx/5xx/network)
 - unified SSE parsing via `sseTransformer`
-- unified timeout entry points in config types (executor wiring still roadmap)
+- unified timeout + cancellation via a single composed `AbortSignal` (wired in `createContext()` and propagated into `ctx.request.signal`)
 - lower provider development cost
 - easier testing with a single execution chokepoint
 
@@ -283,13 +283,23 @@ Key changes (current codebase):
 ### 3.7 Retry and Fallback (Current + Planned)
 
 - Fallback is implemented in `adapter.execute()` outer loop.
-- Retry fields (`maxRetries/retryDelay`) exist in types, but request-layer retry loop is not yet wired.
+- Request-level retry is implemented in the innermost request middleware via `RetryController` (retries the HTTP request only; does not re-run the middleware chain).
+- Timeout and cancellation are implemented by composing `config.timeout` (via `AbortSignal.timeout()`) with `config.signal` (via `AbortSignal.any()`), then propagating the composed signal into `ctx.signal` and `ctx.request.signal`.
 
 Fallback behavior:
 
 - `model: string[]` is the fallback chain
 - each model gets a fresh context and full middleware run
 - `onFallback` is called between attempts
+
+Retry behavior (request-level, inside `createRequestMiddleware()`):
+
+- **Scope**: retries only wrap the `fetch()` call and response decoding; it does not re-run the middleware pipeline.
+- **HTTP retry**: retries on selected transient HTTP statuses (e.g. `408/409/425/429/5xx`), with exponential backoff + jitter.
+- **Retry-After**: honors `Retry-After` header for `429/503` when present.
+- **Non-retryable HTTP**: on the final attempt (or non-retryable status), throws a typed `ProviderError`.
+- **Abort + timeout**: if the composed signal is aborted due to timeout, the error is translated into `TimeoutError(timeoutMs)`; other abort reasons are preserved.
+- **Defaults**: framework defaults are `maxRetries: 2`, `retryDelay: 200ms` (can be overridden at global / API / call level).
 
 ### 3.8 `@ada-pter/rxjs` (Optional Enhancement)
 
