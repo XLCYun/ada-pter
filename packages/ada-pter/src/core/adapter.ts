@@ -28,6 +28,9 @@ import type {
   ResponseRetrieveRequest,
   ResponseRetrieveResponse,
   ResponseRetrieveStreamChunk,
+  SpeechRequest,
+  SpeechResponse,
+  SpeechStreamChunk,
   TranscriptionRequest,
   TranscriptionResponse,
   TranscriptionStreamChunk,
@@ -410,6 +413,21 @@ export class AdaPter {
     ) as
       | Promise<ResponseRetrieveResponse>
       | AsyncIterable<ResponseRetrieveStreamChunk>;
+  }
+
+  speech(
+    params: SpeechRequest & { stream: true },
+  ): AsyncIterable<SpeechStreamChunk>;
+  speech(
+    params: SpeechRequest & { stream?: false | undefined },
+  ): Promise<SpeechResponse>;
+  speech(
+    params: SpeechRequest,
+  ): Promise<SpeechResponse> | AsyncIterable<SpeechStreamChunk> {
+    return this.execute<SpeechResponse | SpeechStreamChunk>(
+      "speech",
+      params as never,
+    ) as Promise<SpeechResponse> | AsyncIterable<SpeechStreamChunk>;
   }
 
   listResponseInputItems(

@@ -11,6 +11,7 @@ export type ApiType =
   | "embedding"
   | "image.generation"
   | "transcription"
+  | "speech"
   | "response.create"
   | "response.cancel"
   | "response.delete"

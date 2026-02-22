@@ -17,6 +17,7 @@ import { OPENAI_BASE } from "./common";
 import { embeddingHandler } from "./embedding";
 import { getImagesHandler } from "./images";
 import { getResponsesHandler } from "./responses";
+import { getSpeechHandler } from "./speech";
 import { getTranscriptionHandler } from "./transcription";
 
 export const name = "@ada-pter/openai";
@@ -105,6 +106,8 @@ export const autoProvider: Provider = {
     if (ctx.apiType === "embedding") return embeddingHandler;
     const transcriptionHandler = getTranscriptionHandler(ctx);
     if (transcriptionHandler) return transcriptionHandler;
+    const speechHandler = getSpeechHandler(ctx);
+    if (speechHandler) return speechHandler;
     const imageHandler = getImagesHandler(ctx);
     if (imageHandler) return imageHandler;
     return getResponsesHandler(ctx);
