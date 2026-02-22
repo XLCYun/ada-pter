@@ -39,7 +39,9 @@ export type {
   SseTransformerOptions,
 } from "./transformers/index";
 export {
+  arrayBufferTransformer,
   autoResponseTransformers,
+  createArrayBufferTransformer,
   createJsonTransformer,
   createSseTransformer,
   jsonTransformer,
@@ -81,6 +83,9 @@ export type {
   RouteCondition,
   RouteEntry,
   RouteResolver,
+  SpeechRequest,
+  SpeechResponse,
+  SpeechStreamChunk,
 } from "./types";
 
 export const VERSION = "0.0.1";

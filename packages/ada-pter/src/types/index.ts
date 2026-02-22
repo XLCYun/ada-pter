@@ -1,5 +1,6 @@
 export type * from "./api";
 export type * from "./api/embedding";
+export type * from "./api/speech";
 export type * from "./api/transcription";
 export type * from "./config";
 export type * from "./core";

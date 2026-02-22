@@ -1,3 +1,7 @@
+export {
+  arrayBufferTransformer,
+  createArrayBufferTransformer,
+} from "./array-buffer";
 export { autoResponseTransformers } from "./auto";
 export {
   createJsonTransformer,
