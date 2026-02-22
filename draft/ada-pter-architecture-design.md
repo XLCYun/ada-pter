@@ -67,11 +67,11 @@ Industry naming analogies:
 
 **Core layers**:
 
-- **Public AdaPter APIs**: one type-safe method per API type; internally sets `ctx.apiType` and enters the shared pipeline.
+- **Public AdaPter APIs**: one type-safe method per API type; internally sets `ctx.apiType` and enters the shared pipeline. Implemented API methods now include `completion`, `embedding`, `image.generation`, `transcription`, `speech`, and the OpenAI "Responses" family (`response.create/retrieve/cancel/delete/compact/input_items.list`).
 - **Middleware pipeline**: fully generic and `apiType`-agnostic; logger/retry/fallback naturally apply to all API types.
 - **Provider (plain object)**: selects handler by `ctx.apiType`, supplies `getRequestConfig()` and `responseTransformers`.
 - **Core executor**: executes fetch using `ctx.request`, then runs response transformer pipeline (`JSON/SSE/auto`) — already implemented.
-- **Roadmap/TODO**: API types beyond completion (embedding/audio/image).
+- **Roadmap/TODO**: additional OpenAI APIs (e.g., files/threads) and non-OpenAI providers for the newer API types.
 
 Core stays dependency-light: Promise, AsyncIterable, AbortController, fetch. RxJS is available via optional `@ada-pter/rxjs`.
 
@@ -198,7 +198,7 @@ Benefits of unified executor:
 - lower provider development cost
 - easier testing with a single execution chokepoint
 
-### 3.6 AdaPter Core Class (Done: completion + stream overload)
+### 3.6 AdaPter Core Class (Done: multi-API + stream overloads)
 
 Public methods are type-safe, but internally unified through `execute(apiType, params)`.
 
@@ -219,7 +219,27 @@ class AdaPter {
   configure(apiType: ApiType, config: Partial<AdapterConfig>): this;
 
   completion(params: CompletionRequest): Promise<CompletionResponse>;
-  completion(params: CompletionRequest & { stream: true }): AsyncIterable<StreamChunk>;
+  completion(params: CompletionRequest & { stream: true }): AsyncIterable<CompletionChunk>;
+
+  embedding(params: EmbeddingRequest): Promise<EmbeddingResponse>;
+
+  imageGeneration(params: ImageGenerationRequest & { stream: true }): AsyncIterable<ImageGenerationStreamChunk>;
+  imageGeneration(params: ImageGenerationRequest & { stream?: false | undefined }): Promise<ImageGenerationResponse>;
+
+  transcription(params: TranscriptionRequest & { stream: true }): AsyncIterable<TranscriptionStreamChunk>;
+  transcription(params: TranscriptionRequest & { stream?: false | null | undefined }): Promise<TranscriptionResponse>;
+
+  speech(params: SpeechRequest & { stream: true }): AsyncIterable<SpeechStreamChunk>;
+  speech(params: SpeechRequest & { stream?: false | undefined }): Promise<SpeechResponse>;
+
+  createResponse(params: ResponseCreateRequest & { stream: true }): AsyncIterable<ResponseCreateStreamChunk>;
+  createResponse(params: ResponseCreateRequest & { stream?: false | undefined }): Promise<ResponseCreateResponse>;
+  cancelResponse(params: ResponseCancelRequest): Promise<ResponseCancelResult>;
+  deleteResponse(params: ResponseDeleteRequest): Promise<ResponseDeleteResult>;
+  compactResponse(params: ResponseCompactRequest): Promise<ResponseCompactResult>;
+  retrieveResponse(params: ResponseRetrieveRequest & { stream: true }): AsyncIterable<ResponseRetrieveStreamChunk>;
+  retrieveResponse(params: ResponseRetrieveRequest & { stream?: false | undefined }): Promise<ResponseRetrieveResponse>;
+  listResponseInputItems(params: ResponseInputItemsListRequest): Promise<ResponseInputItemsListResponse>;
 
   private async execute<TRes>(apiType: ApiType, params: Record<string, unknown>): Promise<TRes> {
     const { config, models } = this.resolveConfig(apiType, params);
@@ -248,7 +268,7 @@ export function createAdapter(): AdaPter {
 }
 ```
 
-Key changes:
+Key changes (current codebase):
 
 - `use()` only accepts middleware functions
 - provider registration is managed by `route()`
@@ -258,6 +278,7 @@ Key changes:
 - `execute()` owns fallback loop, while config is resolved only once
 - `createContext()` is async and completes route resolution before user middleware runs
 - innermost middleware is `createRequestMiddleware()`
+- multi-API surface is live: completion, embedding, image generation, transcription, speech, and OpenAI Responses APIs
 
 ### 3.7 Retry and Fallback (Current + Planned)
 
@@ -306,10 +327,14 @@ export function withRxJS(adapter: AdaPter) {
 
 Current implementation in `packages/providers/openai`:
 
-- returns `null` when `ctx.apiType !== "completion"`
-- non-streaming uses `jsonTransformer`
-- streaming uses `sseTransformer`
-- request auth/base/path are resolved by `resolveApiKey/resolveApiBase/resolveApiPath`
+- completion (streaming + non-streaming)
+- embedding
+- images
+- transcription
+- speech
+- OpenAI Responses APIs (`response.create/retrieve/cancel/delete/compact/input_items.list`), including streaming variants where applicable
+
+Dispatch logic: `autoProvider.getHandler(ctx)` selects by `ctx.apiType`, using `jsonTransformer` for non-streaming and `sseTransformer` for streaming where the upstream API streams.
 
 ---
 

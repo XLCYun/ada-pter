@@ -128,11 +128,11 @@ graph TB
 
 **核心分层**：
 
-- **AdaPter 对外 API**：每个 API 类型一个类型安全的方法，内部设置 `ctx.apiType` 后交给管道
+- **AdaPter 对外 API**：每个 API 类型一个类型安全的方法，内部设置 `ctx.apiType` 后交给管道。当前已实现的 API 方法：`completion`、`embedding`、`image.generation`、`transcription`、`speech`，以及 OpenAI "Responses" 系列（`response.create/retrieve/cancel/delete/compact/input_items.list`）。
 - **中间件管道**：完全通用，不关心 `apiType`，logger/retry/fallback 天然适用所有 API 类型
 - **Provider（纯对象）**：根据 `ctx.apiType` 找到对应 handler，提供 `getRequestConfig()` 与 `responseTransformers`
 - **Core 执行器**：拿到 `ctx.request` 执行 fetch，并执行 response transformer pipeline（JSON/SSE/auto）（已完成）
-- **Roadmap/TODO**：非 completion 的更多 API 类型（embedding/audio/image）
+- **Roadmap/TODO**：OpenAI 其他接口（如 files/threads）以及上述新 API 类型的非 OpenAI provider
 
 core 零重依赖：Promise、AsyncIterable、AbortController、fetch。RxJS 通过 `@ada-pter/rxjs` 可选增强。
 
@@ -310,7 +310,7 @@ interface ApiHandler {
 - 降低 Provider 开发门槛：只需关心 URL、headers、转换
 - 易于测试：mock 一个点即可
 
-### 3.6 AdaPter 核心类（已完成：completion + stream overload）
+### 3.6 AdaPter 核心类（已完成：多 API + stream overload）
 
 每个 API 类型对外一个类型安全的方法，内部统一走 `execute(apiType, params)` → 共享管道。
 
@@ -345,10 +345,27 @@ class AdaPter {
   // ========== 对外 API ==========
 
   completion(params: CompletionRequest): Promise<CompletionResponse>;
-  completion(params: CompletionRequest & { stream: true }): AsyncIterable<StreamChunk>;
-  embedding(...) (Roadmap/TODO)
-  audioTranscribe(...) (Roadmap/TODO)
-  imageGenerate(...) (Roadmap/TODO)
+  completion(params: CompletionRequest & { stream: true }): AsyncIterable<CompletionChunk>;
+
+  embedding(params: EmbeddingRequest): Promise<EmbeddingResponse>;
+
+  imageGeneration(params: ImageGenerationRequest & { stream: true }): AsyncIterable<ImageGenerationStreamChunk>;
+  imageGeneration(params: ImageGenerationRequest & { stream?: false | undefined }): Promise<ImageGenerationResponse>;
+
+  transcription(params: TranscriptionRequest & { stream: true }): AsyncIterable<TranscriptionStreamChunk>;
+  transcription(params: TranscriptionRequest & { stream?: false | null | undefined }): Promise<TranscriptionResponse>;
+
+  speech(params: SpeechRequest & { stream: true }): AsyncIterable<SpeechStreamChunk>;
+  speech(params: SpeechRequest & { stream?: false | undefined }): Promise<SpeechResponse>;
+
+  createResponse(params: ResponseCreateRequest & { stream: true }): AsyncIterable<ResponseCreateStreamChunk>;
+  createResponse(params: ResponseCreateRequest & { stream?: false | undefined }): Promise<ResponseCreateResponse>;
+  cancelResponse(params: ResponseCancelRequest): Promise<ResponseCancelResult>;
+  deleteResponse(params: ResponseDeleteRequest): Promise<ResponseDeleteResult>;
+  compactResponse(params: ResponseCompactRequest): Promise<ResponseCompactResult>;
+  retrieveResponse(params: ResponseRetrieveRequest & { stream: true }): AsyncIterable<ResponseRetrieveStreamChunk>;
+  retrieveResponse(params: ResponseRetrieveRequest & { stream?: false | undefined }): Promise<ResponseRetrieveResponse>;
+  listResponseInputItems(params: ResponseInputItemsListRequest): Promise<ResponseInputItemsListResponse>;
 
   // ========== 内部执行流程 ==========
 
@@ -408,7 +425,7 @@ export function createAdapter(): AdaPter {
 }
 ```
 
-**关键变更**：
+**关键变更（当前代码）**：
 - `use()` 仅注册中间件（函数），不再接受 Provider 对象
 - Provider 路由通过 `route()` 管理，支持条件路由和函数路由
 - `autoRoute()` 将 auto-load 逻辑插入路由链尾部
@@ -418,6 +435,7 @@ export function createAdapter(): AdaPter {
 - **`createContext()` 是 async**：负责 model 解析 + 路由匹配，ctx 出来时 provider/handler 已就绪
 - **用户中间件可在请求前读取完整上下文**：`ctx.provider`、`ctx.handler`、`ctx.modelId` 等在中间件运行前即已填充
 - **最内层中间件是 `createRequestMiddleware()`**：只负责 HTTP 执行，替代原 dispatch 中间件
+- **多 API 面上线**：completion、embedding、image generation、transcription、speech，以及 OpenAI Responses 系列
 
 ### 3.7 Retry 与 Fallback（当前实现 + 规划）
 
@@ -524,12 +542,16 @@ adapter.completion$({ model: 'openai/gpt-4', messages }).pipe(
 
 ### 3.9 Provider 插件示例（`@ada-pter/openai` 当前状态）
 
-当前仓库内 `packages/providers/openai` 已实现 completion 与 streaming completion，并导出 `autoProvider`：
+当前仓库内 `packages/providers/openai` 已实现：
 
-- `ctx.apiType !== "completion"` 时返回 `null`
-- 非流式使用 `jsonTransformer`
-- 流式使用 `sseTransformer`
-- 使用 `resolveApiKey/resolveApiBase/resolveApiPath` 解析鉴权与 URL
+- completion（流式 + 非流式）
+- embedding
+- images
+- transcription
+- speech
+- OpenAI Responses 系列（`response.create/retrieve/cancel/delete/compact/input_items.list`），含需要的流式返回
+
+`autoProvider.getHandler(ctx)` 按 `ctx.apiType` 分发，非流式用 `jsonTransformer`，流式用 `sseTransformer`（上游支持流时）。
 
 ---
 
