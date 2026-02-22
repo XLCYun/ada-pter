@@ -262,6 +262,22 @@ export class AdaPter {
       response: {},
     };
 
+    // Compose user-provided signal with timeout signal into a single runtime signal
+    const signals: AbortSignal[] = [];
+    if (config.signal) signals.push(config.signal);
+    const timeout = config.timeout;
+    if (timeout != null) {
+      signals.push(AbortSignal.timeout(timeout));
+    }
+
+    const composedSignal =
+      signals.length === 0
+        ? undefined
+        : signals.length === 1
+          ? signals[0]
+          : AbortSignal.any(signals);
+    ctx.signal = composedSignal;
+
     // Route resolution — fills ctx.provider and ctx.handler
     await resolveFromRouteChain(ctx, this.routeEntries);
 
@@ -281,6 +297,11 @@ export class AdaPter {
       if (body != null && typeof body !== "string") {
         mergedRequest.body = JSON.stringify(body);
       }
+    }
+
+    // Propagate composed signal into request as the single authoritative signal
+    if (composedSignal) {
+      mergedRequest.signal = composedSignal;
     }
 
     mergedRequest.headers = headers;
