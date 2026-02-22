@@ -306,7 +306,7 @@ interface ApiHandler {
 
 - 统一错误处理：4xx/5xx/网络错误 → 类型化 Error
 - 统一 SSE 解析：通过 `sseTransformer` 将 SSE data 解析为 `AsyncIterable`
-- 统一超时入口：`timeout/signal` 字段已在配置类型中定义（执行器接入仍在 Roadmap）
+- 统一超时与取消：`timeout/signal` 在 `createContext()` 阶段合成为一个运行时 `AbortSignal`，并透传到 `ctx.request.signal`，由 `fetch` 直接使用
 - 降低 Provider 开发门槛：只需关心 URL、headers、转换
 - 易于测试：mock 一个点即可
 
@@ -439,11 +439,23 @@ export function createAdapter(): AdaPter {
 
 ### 3.7 Retry 与 Fallback（当前实现 + 规划）
 
-> fallback 已实现于 `adapter.execute()` 外层循环（每个 model 独立创建 ctx + 运行完整中间件管道）。retry 字段（`maxRetries/retryDelay`）已在配置类型中预留，但 request 层重试逻辑尚未接入。
+> fallback 已实现于 `adapter.execute()` 外层循环（每个 model 独立创建 ctx + 运行完整中间件管道）。retry 已实现于 request middleware（最内层）中：仅重试 HTTP 请求，不重跑中间件链。
 
-**Retry（Roadmap）**：
+**Retry（request 级，已实现）**：
 
-当前代码尚未包含上述重试循环，后续会在 request middleware 层补齐（仅重试 HTTP 请求，不重跑中间件链）。
+- **实现位置**：`createRequestMiddleware()` 内部通过 `RetryController` 包裹 `fetch()`。
+- **重试范围**：只重试 HTTP 请求（含拿到 response 后的失败判定），不会重新执行用户中间件链。
+- **HTTP 重试策略**：对部分瞬态状态码（如 `429/5xx` 等）进行重试；对 `429/503` 会读取并遵守 `Retry-After`。
+- **退避策略**：指数退避 + jitter；支持 `maxRetryDelay` 上限。
+- **最终失败**：最后一次尝试或不可重试状态码，会抛出类型化 `ProviderError`。
+- **默认值**：`defaults.ts` 中默认 `maxRetries: 2`、`retryDelay: 200ms`（可被全局/接口级/调用级覆盖）。
+
+**Timeout + signal（已实现）**：
+
+- `config.timeout` 通过 `AbortSignal.timeout(timeoutMs)` 转为超时信号。
+- 与用户传入的 `config.signal` 使用 `AbortSignal.any([...])` 合并为一个 `ctx.signal`。
+- 合并后的 signal 会写入 `ctx.request.signal`，从而由 `fetch()` 统一处理取消/超时。
+- 若是 timeout 触发的 abort，会被转换为 `TimeoutError(timeoutMs)`；非 timeout 的 abort reason 会被保留。
 
 **Fallback -- adapter.execute() 外层循环**（model 失败后自动切换，每个 model 重跑完整中间件管道）：
 
