@@ -17,6 +17,7 @@ import { OPENAI_BASE } from "./common";
 import { embeddingHandler } from "./embedding";
 import { getImagesHandler } from "./images";
 import { getResponsesHandler } from "./responses";
+import { getTranscriptionHandler } from "./transcription";
 
 export const name = "@ada-pter/openai";
 const COMPLETION_PATH = "/chat/completions";
@@ -98,18 +99,12 @@ const streamingCompletionHandler: ApiHandler = {
 export const autoProvider: Provider = {
   name: "openai",
   getHandler(ctx: AdapterContext) {
-    switch (ctx.apiType) {
-      case "completion": {
-        return ctx.config.stream
-          ? streamingCompletionHandler
-          : completionHandler;
-      }
-      case "embedding": {
-        return embeddingHandler;
-      }
-      default:
-        break;
+    if (ctx.apiType === "completion") {
+      return ctx.config.stream ? streamingCompletionHandler : completionHandler;
     }
+    if (ctx.apiType === "embedding") return embeddingHandler;
+    const transcriptionHandler = getTranscriptionHandler(ctx);
+    if (transcriptionHandler) return transcriptionHandler;
     const imageHandler = getImagesHandler(ctx);
     if (imageHandler) return imageHandler;
     return getResponsesHandler(ctx);

@@ -10,6 +10,7 @@ export type ApiType =
   | "completion"
   | "embedding"
   | "image.generation"
+  | "transcription"
   | "response.create"
   | "response.cancel"
   | "response.delete"
