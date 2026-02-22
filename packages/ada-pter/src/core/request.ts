@@ -1,4 +1,4 @@
-import { ProviderError } from "../errors";
+import { ProviderError, TimeoutError } from "../errors";
 import { autoResponseTransformers } from "../transformers/index";
 import type { Middleware } from "../types/core";
 
@@ -20,7 +20,24 @@ export function createRequestMiddleware(): Middleware {
   return async (ctx) => {
     const { url, ...init } = ctx.request;
 
-    const res = await fetch(url, init);
+    let res: Response;
+    try {
+      res = await fetch(url, init);
+    } catch (err) {
+      // Normalize timeout aborts: if composed signal aborted due to timeout, throw TimeoutError
+      if (ctx.signal?.aborted) {
+        const reason = (ctx.signal as AbortSignal).reason;
+        const timeout = ctx.config.timeout;
+        const isTimeoutReason =
+          (typeof reason === "object" && reason?.name === "TimeoutError") ||
+          (typeof reason === "string" &&
+            reason.toLowerCase().includes("timeout"));
+        if (timeout && Number.isFinite(timeout) && isTimeoutReason) {
+          throw new TimeoutError(timeout);
+        }
+      }
+      throw err;
+    }
     ctx.response.raw = res;
 
     if (!res.ok) {
