@@ -21,6 +21,6 @@
     "dev": "tsdown --watch"
   },
   "dependencies": {
-    "ada-pter": "^0.1.0"
+    "ada-pter": "workspace:*"
   }
 }
