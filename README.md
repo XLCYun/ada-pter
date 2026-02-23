@@ -115,8 +115,8 @@ flowchart TB
   B --> C[Provider routing<br/>resolve Provider and Handler]
   C --> E
   subgraph D[Middleware Stack]
-    E[Middleware (before request)] --> F[fetch request]
-    F --> G[Middleware (after response)]
+    E[Middleware （before request）] --> F[fetch request]
+    F --> G[Middleware （after response）]
   end
 ```
 
