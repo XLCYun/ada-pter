@@ -11,8 +11,9 @@
   "scripts": {
     "build": "bun run --filter '*' build",
     "dev": "bun run --filter '*' dev",
-    "release:ci": "multi-semantic-release \"packages/ada-pter\" \"packages/providers/*\" \"packages/integrations/*\" \"packages/middlewares/*\" --sequential-init --first-parent",
-    "release:dry-run": "bun run release:ci --dry-run",
+    "changeset": "changeset",
+    "release:ci": "changeset publish",
+    "release:dry-run": "changeset status --verbose",
     "test": "bun run test:unit",
     "test:unit": "bun run test:unit:bun",
     "test:unit:bun": "bun test packages",
@@ -30,15 +31,9 @@
   "devDependencies": {
     "@ada-pter/openai": "workspace:*",
     "@biomejs/biome": "^2.3.14",
-    "@semantic-release/commit-analyzer": "^13.0.1",
-    "@semantic-release/github": "^12.0.6",
-    "@semantic-release/npm": "^13.1.4",
-    "@semantic-release/release-notes-generator": "^14.1.0",
+    "@changesets/cli": "^2.29.8",
     "@types/bun": "latest",
     "ada-pter": "workspace:*",
-    "conventional-changelog-conventionalcommits": "^9.1.0",
-    "multi-semantic-release": "^3.1.0",
-    "semantic-release": "^25.0.3",
     "tsdown": "^0.20.3",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"

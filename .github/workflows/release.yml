@@ -30,8 +30,11 @@ jobs:
       - name: Run unit tests
         run: bun run test:unit:bun
 
-      - name: Release
-        run: bun run release:ci
+      - name: Create Release Pull Request or Publish to npm
+        uses: changesets/action@v1
+        with:
+          version: bunx changeset version
+          publish: bun run release:ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
