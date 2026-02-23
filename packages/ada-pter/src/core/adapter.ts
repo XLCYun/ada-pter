@@ -462,7 +462,7 @@ export class AdaPter {
 }
 
 /** Pre-created singleton instance for zero-config usage. */
-export const adapter = new AdaPter();
+export const adapter = new AdaPter().autoRoute();
 
 /** Factory function for creating isolated instances. */
 export function createAdapter(): AdaPter {

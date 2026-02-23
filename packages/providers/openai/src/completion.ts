@@ -97,19 +97,27 @@ const streamingCompletionHandler: ApiHandler = {
   responseTransformers: [sseTransformer],
 };
 
-export const autoProvider: Provider = {
-  name: "openai",
-  getHandler(ctx: AdapterContext) {
-    if (ctx.apiType === "completion") {
-      return ctx.config.stream ? streamingCompletionHandler : completionHandler;
-    }
-    if (ctx.apiType === "embedding") return embeddingHandler;
-    const transcriptionHandler = getTranscriptionHandler(ctx);
-    if (transcriptionHandler) return transcriptionHandler;
-    const speechHandler = getSpeechHandler(ctx);
-    if (speechHandler) return speechHandler;
-    const imageHandler = getImagesHandler(ctx);
-    if (imageHandler) return imageHandler;
-    return getResponsesHandler(ctx);
-  },
+export type OpenAIProviderOptions = Record<string, never>;
+
+export const getProvider = (_options?: OpenAIProviderOptions): Provider => {
+  return {
+    name: "openai",
+    getHandler(ctx: AdapterContext) {
+      if (ctx.apiType === "completion") {
+        return ctx.config.stream
+          ? streamingCompletionHandler
+          : completionHandler;
+      }
+      if (ctx.apiType === "embedding") return embeddingHandler;
+      const transcriptionHandler = getTranscriptionHandler(ctx);
+      if (transcriptionHandler) return transcriptionHandler;
+      const speechHandler = getSpeechHandler(ctx);
+      if (speechHandler) return speechHandler;
+      const imageHandler = getImagesHandler(ctx);
+      if (imageHandler) return imageHandler;
+      return getResponsesHandler(ctx);
+    },
+  };
 };
+
+export const autoProvider: Provider = getProvider();
