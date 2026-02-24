@@ -1,10 +1,10 @@
-import type { AdapterContext, ApiHandler, RequestConfig } from "ada-pter";
+import type { AdapterContext, ApiHandler, RequestConfig } from "@ada-pter/core";
 import {
   joinPath,
   jsonTransformer,
   resolveApiPath,
   sseTransformer,
-} from "ada-pter";
+} from "@ada-pter/core";
 import type { ImageGenerateParamsBase } from "ada-pter/types/openai/images";
 import { resolveRequestBase } from "./utils";
 

@@ -26,5 +26,5 @@ These rules apply to commits merged into `main`, where the release workflow runs
 
 - The workflow uses `multi-semantic-release` to release packages independently.
 - Tags use package-aware format (`${name}@${version}`), for example:
-  - `ada-pter@0.2.0`
+  - `@ada-pter/core@0.2.0`
   - `@ada-pter/openai@0.1.3`

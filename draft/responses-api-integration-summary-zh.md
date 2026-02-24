@@ -1,6 +1,6 @@
 # Responses API 集成方案总结（Core + OpenAI Provider）
 
-本文总结了将 OpenAI Responses API 接入 `ada-pter` core 与 `@ada-pter/openai` 的实现方案，包括：API 类型扩展、adapter 对外方法、provider handler 分发，以及可复用工具方法提取。
+本文总结了将 OpenAI Responses API 接入 `@ada-pter/core` core 与 `@ada-pter/openai` 的实现方案，包括：API 类型扩展、adapter 对外方法、provider handler 分发，以及可复用工具方法提取。
 
 ## 1. 目标
 
@@ -106,7 +106,7 @@ transformer 策略：
 
 - `buildQuery` 独立到：
   - `packages/ada-pter/src/helpers/query.ts`
-- 并通过 `ada-pter` 主入口导出后供 provider 侧复用。
+- 并通过 `@ada-pter/core` 主入口导出后供 provider 侧复用。
 
 ## 6. 已确认的关键决策
 

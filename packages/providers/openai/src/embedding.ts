@@ -1,5 +1,5 @@
-import type { AdapterContext, ApiHandler, RequestConfig } from "ada-pter";
-import { joinPath, jsonTransformer, resolveApiPath } from "ada-pter";
+import type { AdapterContext, ApiHandler, RequestConfig } from "@ada-pter/core";
+import { joinPath, jsonTransformer, resolveApiPath } from "@ada-pter/core";
 import type { EmbeddingCreateParams } from "ada-pter/types/openai/embeddings";
 import { resolveRequestBase } from "./utils";
 

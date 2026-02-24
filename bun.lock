@@ -5,25 +5,25 @@
     "": {
       "name": "ada-pter-monorepo",
       "devDependencies": {
+        "@ada-pter/core": "workspace:*",
         "@ada-pter/openai": "workspace:*",
         "@biomejs/biome": "^2.3.14",
         "@changesets/cli": "^2.29.8",
         "@types/bun": "latest",
-        "ada-pter": "workspace:*",
         "tsdown": "^0.20.3",
         "typescript": "^5.9.3",
         "vitest": "^2.1.9",
       },
     },
     "packages/ada-pter": {
-      "name": "ada-pter",
+      "name": "@ada-pter/core",
       "version": "0.1.0",
     },
     "packages/integrations/rxjs": {
       "name": "@ada-pter/rxjs",
       "version": "0.1.0",
       "dependencies": {
-        "ada-pter": "workspace:*",
+        "@ada-pter/core": "workspace:*",
       },
       "peerDependencies": {
         "rxjs": ">=7.0.0",
@@ -33,26 +33,28 @@
       "name": "@ada-pter/logger",
       "version": "0.1.0",
       "dependencies": {
-        "ada-pter": "workspace:*",
+        "@ada-pter/core": "workspace:*",
       },
     },
     "packages/providers/anthropic": {
       "name": "@ada-pter/anthropic",
       "version": "0.1.0",
       "dependencies": {
-        "ada-pter": "workspace:*",
+        "@ada-pter/core": "workspace:*",
       },
     },
     "packages/providers/openai": {
       "name": "@ada-pter/openai",
       "version": "0.1.0",
       "dependencies": {
-        "ada-pter": "workspace:*",
+        "@ada-pter/core": "workspace:*",
       },
     },
   },
   "packages": {
     "@ada-pter/anthropic": ["@ada-pter/anthropic@workspace:packages/providers/anthropic"],
+
+    "@ada-pter/core": ["@ada-pter/core@workspace:packages/ada-pter"],
 
     "@ada-pter/logger": ["@ada-pter/logger@workspace:packages/middlewares/logger"],
 
@@ -303,8 +305,6 @@
     "@vitest/spy": ["@vitest/spy@2.1.9", "", { "dependencies": { "tinyspy": "^3.0.2" } }, "sha512-E1B35FwzXXTs9FHNK6bDszs7mtydNi5MIfUWpceJ8Xbfb1gBMscAnwLbEu+B44ed6W3XjL9/ehLPHR1fkf1KLQ=="],
 
     "@vitest/utils": ["@vitest/utils@2.1.9", "", { "dependencies": { "@vitest/pretty-format": "2.1.9", "loupe": "^3.1.2", "tinyrainbow": "^1.2.0" } }, "sha512-v0psaMSkNJ3A2NMrUEHFRzJtDPFn+/VWZ5WxImB21T9fjucJRmS7xCS3ppEnARb9y11OAzaD+P2Ps+b+BGX5iQ=="],
-
-    "ada-pter": ["ada-pter@workspace:packages/ada-pter"],
 
     "ansi-colors": ["ansi-colors@4.1.3", "", {}, "sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw=="],
 

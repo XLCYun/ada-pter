@@ -1,10 +1,10 @@
-import type { AdapterContext, ApiHandler, RequestConfig } from "ada-pter";
+import type { AdapterContext, ApiHandler, RequestConfig } from "@ada-pter/core";
 import {
   joinPath,
   jsonTransformer,
   resolveApiPath,
   sseTransformer,
-} from "ada-pter";
+} from "@ada-pter/core";
 import type { TranscriptionCreateParamsBase } from "ada-pter/types/openai/transcriptions";
 import { resolveRequestBase } from "./utils";
 

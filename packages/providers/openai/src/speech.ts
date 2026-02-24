@@ -1,10 +1,10 @@
-import type { AdapterContext, ApiHandler, RequestConfig } from "ada-pter";
+import type { AdapterContext, ApiHandler, RequestConfig } from "@ada-pter/core";
 import {
   arrayBufferTransformer,
   joinPath,
   resolveApiPath,
   sseTransformer,
-} from "ada-pter";
+} from "@ada-pter/core";
 import type { SpeechCreateParams } from "ada-pter/types/openai/speech";
 import { resolveRequestBase } from "./utils";
 

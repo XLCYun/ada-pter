@@ -21,7 +21,7 @@
     "dev": "tsdown --watch"
   },
   "dependencies": {
-    "ada-pter": "workspace:*"
+    "@ada-pter/core": "workspace:*"
   },
   "peerDependencies": {
     "rxjs": ">=7.0.0"

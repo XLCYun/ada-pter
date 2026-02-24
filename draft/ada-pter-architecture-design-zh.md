@@ -19,14 +19,14 @@
 
 使用 **Bun workspaces** 管理 monorepo，各包独立发布，适配器之间零耦合。
 
-**命名规则**：核心包发布为 `ada-pter`，其他包发布为 `@ada-pter/xxx`。
+**命名规则**：核心包发布为 `@ada-pter/core`，其他包发布为 `@ada-pter/xxx`。
 
 **目录按职责分类**：providers（Provider 适配器）、integrations（可选集成）、middlewares（独立中间件包）各自归入子目录。
 
 ```
 ada-pter/
 ├── packages/
-│   ├── ada-pter/              # npm: ada-pter          - 核心框架（中间件引擎 + 类型 + 工具函数）
+│   ├── ada-pter/              # npm: @ada-pter/core          - 核心框架（中间件引擎 + 类型 + 工具函数）
 │   ├── providers/
 │   │   ├── openai/            # npm: @ada-pter/openai   - OpenAI 适配器
 │   │   └── anthropic/         # npm: @ada-pter/anthropic - Anthropic 适配器（后续版本）
@@ -44,7 +44,7 @@ ada-pter/
 
 ```json
 "workspaces": [
-  "packages/ada-pter",
+  "packages/@ada-pter/core",
   "packages/providers/*",
   "packages/integrations/*",
   "packages/middlewares/*"
@@ -57,7 +57,7 @@ Bun workspace 的 glob 只匹配含 `package.json` 的目录，`providers/`、`i
 
 ```mermaid
 graph LR
-    Core["ada-pter (core, 零重依赖)"]
+    Core["@ada-pter/core (core, 零重依赖)"]
     OpenAI["@ada-pter/openai"] --> Core
     Anthropic["@ada-pter/anthropic"] --> Core
     RxJS["@ada-pter/rxjs (可选)"] --> Core
@@ -499,7 +499,7 @@ throw lastError!;
 ```typescript
 // @ada-pter/rxjs
 import { Observable } from 'rxjs';
-import type { AdaPter, CompletionRequest, StreamChunk } from 'ada-pter';
+import type { AdaPter, CompletionRequest, StreamChunk } from '@ada-pter/core';
 
 /** AsyncIterable → Observable 转换 */
 export function toObservable<T>(iterable: AsyncIterable<T>): Observable<T> {
@@ -532,7 +532,7 @@ export function withRxJS(adapter: AdaPter) {
 使用方式：
 
 ```typescript
-import { createAdapter } from 'ada-pter';
+import { createAdapter } from '@ada-pter/core';
 import { openai } from '@ada-pter/openai';
 import { withRxJS } from '@ada-pter/rxjs';
 import { map, scan } from 'rxjs/operators';
@@ -574,7 +574,7 @@ adapter.completion$({ model: 'openai/gpt-4', messages }).pipe(
 核心包导出一个预创建的 `adapter` 单例，结合 `autoRoute()` + 环境变量，可零配置直接调用：
 
 ```typescript
-import { adapter } from 'ada-pter';
+import { adapter } from '@ada-pter/core';
 
 // 零配置：启用 autoRoute + 环境变量提供 API Key
 adapter.autoRoute();
@@ -597,7 +597,7 @@ for await (const chunk of adapter.completion({
 需要定制时，通过 `configure()` 设置全局和接口级配置：
 
 ```typescript
-import { adapter } from 'ada-pter';
+import { adapter } from '@ada-pter/core';
 
 // 全局配置
 adapter.configure({
@@ -622,7 +622,7 @@ const res = await adapter.completion({
 需要多实例隔离（如不同 API Key、不同中间件栈）时，使用 `createAdapter()` 创建独立实例：
 
 ```typescript
-import { createAdapter } from 'ada-pter';
+import { createAdapter } from '@ada-pter/core';
 import { openai } from '@ada-pter/openai';
 import { anthropic } from '@ada-pter/anthropic';
 
@@ -663,7 +663,7 @@ const res2 = await myAdapter.completion({
 ### 4.3 使用中间件 + Retry + Fallback
 
 ```typescript
-import { createAdapter } from 'ada-pter';
+import { createAdapter } from '@ada-pter/core';
 import { openai } from '@ada-pter/openai';
 import { anthropic } from '@ada-pter/anthropic';
 import { logger } from '@ada-pter/logger';
@@ -693,7 +693,7 @@ const res = await adapter.completion({
 model 数组替代原 `fallbackModels`，语义更清晰：
 
 ```typescript
-import { createAdapter } from 'ada-pter';
+import { createAdapter } from '@ada-pter/core';
 import { openai } from '@ada-pter/openai';
 import { anthropic } from '@ada-pter/anthropic';
 
@@ -718,7 +718,7 @@ adapter.configure('completion', {
 ### 4.5 自定义中间件
 
 ```typescript
-import type { Middleware } from 'ada-pter';
+import type { Middleware } from '@ada-pter/core';
 
 // 对所有 API 类型生效
 const costTracker: Middleware = async (ctx, next) => {
@@ -744,7 +744,7 @@ adapter.use(embeddingCache);
 ### 4.6 自定义 Provider（无需发包）
 
 ```typescript
-import { createAdapter, defineProvider } from 'ada-pter';
+import { createAdapter, defineProvider } from '@ada-pter/core';
 
 const myLLM = defineProvider({
   name: 'my-llm',
@@ -776,7 +776,7 @@ const adapter = createAdapter()
 通过 `autoRoute()` 启用自动加载。用户安装 `@ada-pter/openai` 后，无需手动 `import` 和 `route()` 注册，框架根据请求模型名称自动动态导入并注册对应的 Provider 包：
 
 ```typescript
-import { adapter } from 'ada-pter';
+import { adapter } from '@ada-pter/core';
 
 adapter.autoRoute();  // 启用自动加载（插入路由链尾部）
 
@@ -813,7 +813,7 @@ const res = await adapter.completion({
 ### 4.8 可选 RxJS 增强
 
 ```typescript
-import { createAdapter } from 'ada-pter';
+import { createAdapter } from '@ada-pter/core';
 import { openai } from '@ada-pter/openai';
 import { withRxJS } from '@ada-pter/rxjs';
 import { map, filter, scan } from 'rxjs/operators';
@@ -839,7 +839,7 @@ adapter.completion$({
 
 ### 5.1 core 零重依赖
 
-- core（`ada-pter`）仅使用原生 API：Promise、AsyncIterable、AbortController、fetch（由 Provider 插件使用）
+- core（`@ada-pter/core`）仅使用原生 API：Promise、AsyncIterable、AbortController、fetch（由 Provider 插件使用）
 - 没有 RxJS、没有 axios，极致轻量
 - fallback 在 adapter.execute() 外层循环（每个 model 独立创建 ctx + 运行完整中间件管道）
 - retry 参数（`maxRetries/retryDelay`）已定义在配置类型，request 层执行逻辑仍在 Roadmap
@@ -880,7 +880,7 @@ adapter.completion$({
 要实现“stream 结束后再执行后处理”，不应让中间件链 per-chunk 重跑（开销大且 onion 语义不自然），而是让需要结果级语义的中间件在 `await next()` 之后**包裹** `ctx.response.data`：
 
 ```ts
-import type { Middleware } from "ada-pter";
+import type { Middleware } from "@ada-pter/core";
 
 /**
  * 结果级后处理示例：
@@ -938,7 +938,7 @@ const middlewareA: Middleware = async (ctx, next) => {
 - `configure()` 通过重载合并了原 `configure()` + `defaults()` 双方法
 - `model` 为配置参数，支持三级解析：
   - `model` 可以是 string 或 string[]（数组 = fallback 链），替代原 `fallbackModels` 字段
-- 不需要配置文件：ada-pter 是库不是 CLI 工具
+- 不需要配置文件：@ada-pter/core 是库不是 CLI 工具
 
 ### 5.5 多 API 类型：共享管道 + 按类型分发
 
@@ -951,11 +951,11 @@ const middlewareA: Middleware = async (ctx, next) => {
 ### 5.6 ESM-only 输出
 
 - 所有包仅输出 ESM 格式（`.js` + `.d.ts`），不生成 CJS（`.cjs`）
-- ada-pter 要求 Node.js 18+（因为原生 fetch），该版本对 ESM 支持已完全成熟
+- @ada-pter/core 要求 Node.js 18+（因为原生 fetch），该版本对 ESM 支持已完全成熟
 - 业界趋势：chalk v5、execa v6、got v12、node-fetch v3 等知名包均已 ESM-only
 - Bun / Deno 天然 ESM-first，无需 CJS 兼容
 - 简化构建配置和 package.json exports，避免 CJS/ESM 互操作的各种边界问题
-- CJS 项目仍可通过 `await import('ada-pter')` 使用（Node.js 12.17+ 支持 CJS 中的动态 `import()`）
+- CJS 项目仍可通过 `await import('@ada-pter/core')` 使用（Node.js 12.17+ 支持 CJS 中的动态 `import()`）
 
 ### 5.7 Provider 自动加载
 
@@ -1029,7 +1029,7 @@ Provider 路由采用声明式**路由链**体系：
 
 第一版聚焦核心框架 + 1 个 Provider + 可选包，验证架构：
 
-- `ada-pter`（核心）：中间件引擎、Context、类型、route() 路由链、三级配置 configure()、统一执行器、model 数组 fallback、autoRoute() 自动加载、内置模型映射表、defineProvider、内置单例
+- `@ada-pter/core`（核心）：中间件引擎、Context、类型、route() 路由链、三级配置 configure()、统一执行器、model 数组 fallback、autoRoute() 自动加载、内置模型映射表、defineProvider、内置单例
 - `@ada-pter/openai`：completion（含 streaming）
 - `@ada-pter/rxjs`：toObservable、withRxJS
 - `@ada-pter/logger`：独立日志中间件包
@@ -1044,12 +1044,12 @@ Provider 路由采用声明式**路由链**体系：
 
 ## 七、与 litellm 的对比
 
-- **架构**：litellm 单包大 if/elif 路由 → ada-pter 中间件框架 + 插件
-- **HTTP 层**：litellm BaseLLMHTTPHandler → ada-pter 统一 request middleware + response transformers（思路一致）
-- **扩展方式**：litellm 修改源码/PR → ada-pter 安装插件/自定义中间件/defineProvider
-- **Provider 添加**：litellm 在 main.py 加分支 → ada-pter 独立 npm 包，声明 handlers 即可
-- **多 API 类型**：litellm 每个类型独立函数 → ada-pter 共享管道 + handlers 分发
-- **流式处理**：litellm CustomStreamWrapper → ada-pter AsyncIterable（+ 可选 RxJS）
-- **类型安全**：litellm 运行时检查 → ada-pter 编译时类型检查
-- **依赖**：litellm 依赖较重 → ada-pter core 零重依赖
+- **架构**：litellm 单包大 if/elif 路由 → @ada-pter/core 中间件框架 + 插件
+- **HTTP 层**：litellm BaseLLMHTTPHandler → @ada-pter/core 统一 request middleware + response transformers（思路一致）
+- **扩展方式**：litellm 修改源码/PR → @ada-pter/core 安装插件/自定义中间件/defineProvider
+- **Provider 添加**：litellm 在 main.py 加分支 → @ada-pter/core 独立 npm 包，声明 handlers 即可
+- **多 API 类型**：litellm 每个类型独立函数 → @ada-pter/core 共享管道 + handlers 分发
+- **流式处理**：litellm CustomStreamWrapper → @ada-pter/core AsyncIterable（+ 可选 RxJS）
+- **类型安全**：litellm 运行时检查 → @ada-pter/core 编译时类型检查
+- **依赖**：litellm 依赖较重 → @ada-pter/core core 零重依赖
 
