@@ -1,5 +1,16 @@
 # @ada-pter/openai
 
+## 0.3.0
+
+### Minor Changes
+
+- 98c7443: Update ada-pter package name to scoped style: @ada-pter/core
+
+### Patch Changes
+
+- Updated dependencies [98c7443]
+  - @ada-pter/core@0.2.0
+
 ## 0.2.0
 
 ### Minor Changes
