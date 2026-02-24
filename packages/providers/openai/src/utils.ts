@@ -1,5 +1,5 @@
-import type { AdapterContext } from "ada-pter";
-import { resolveApiBase, resolveApiKey } from "ada-pter";
+import type { AdapterContext } from "@ada-pter/core";
+import { resolveApiBase, resolveApiKey } from "@ada-pter/core";
 import { OPENAI_BASE } from "./common";
 
 export function resolveRequestBase(ctx: AdapterContext): {

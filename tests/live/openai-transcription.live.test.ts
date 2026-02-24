@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { createAdapter } from "@ada-pter/core";
 import { autoProvider } from "@ada-pter/openai";
-import { createAdapter } from "ada-pter";
 
 const apiKey = process.env.OPENAI_API_KEY;
 const canRun = Boolean(apiKey);

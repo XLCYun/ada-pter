@@ -1,5 +1,5 @@
 /**
- * Error classes for ada-pter.
+ * Error classes for @ada-pter/core.
  *
  * Kept in a standalone file (not inside types/) because these are runtime
  * classes that survive compilation, unlike pure type definitions.
@@ -8,7 +8,7 @@
  */
 
 /**
- * Base error for all ada-pter errors.
+ * Base error for all @ada-pter/core errors.
  * Downstream code can catch this single class to handle any framework-level error.
  */
 export class AdaPterError extends Error {

@@ -3,7 +3,7 @@ import type {
   ApiHandler,
   Provider,
   RequestConfig,
-} from "ada-pter";
+} from "@ada-pter/core";
 import {
   joinPath,
   jsonTransformer,
@@ -11,7 +11,7 @@ import {
   resolveApiKey,
   resolveApiPath,
   sseTransformer,
-} from "ada-pter";
+} from "@ada-pter/core";
 import type { ChatCompletionCreateParamsBase } from "ada-pter/types/openai/completions";
 import { OPENAI_BASE } from "./common";
 import { embeddingHandler } from "./embedding";

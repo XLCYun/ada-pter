@@ -4,7 +4,7 @@
 
 **The Universal, Type-Safe LLM Adapter for TypeScript**
 
-[![npm version](https://img.shields.io/npm/v/ada-pter.svg?style=flat-square)](https://www.npmjs.com/package/ada-pter)
+[![npm version](https://img.shields.io/npm/v/@ada-pter/core.svg?style=flat-square)](https://www.npmjs.com/package/@ada-pter/core)
 [![codecov](https://codecov.io/gh/XLCYun/ada-pter/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/XLCYun/ada-pter)
 [![CI Build](https://img.shields.io/github/actions/workflow/status/XLCYun/ada-pter/unit-tests.yml?branch=main&style=flat-square)](https://github.com/XLCYun/ada-pter/actions/workflows/unit-tests.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -40,16 +40,16 @@ Install the core package and your desired provider(s).
 
 ```bash
 # Using bun
-bun add ada-pter @ada-pter/openai
+bun add @ada-pter/core @ada-pter/openai
 
 # Using npm
-npm install ada-pter @ada-pter/openai
+npm install @ada-pter/core @ada-pter/openai
 
 # Using pnpm
-pnpm add ada-pter @ada-pter/openai
+pnpm add @ada-pter/core @ada-pter/openai
 
 # Using yarn
-yarn add ada-pter @ada-pter/openai
+yarn add @ada-pter/core @ada-pter/openai
 ```
 
 ## 🚀 Quick Start
@@ -57,7 +57,7 @@ yarn add ada-pter @ada-pter/openai
 Here is a minimal example showing how to use the default exported `adapter`. Under the hood, it uses `autoRoute` which will automatically infer and load the required provider (like `@ada-pter/openai` or any OpenAI-compatible provider) based on the model name you provide!
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 // Make a unified API call (automatically uses the inferred provider)
 const response = await adapter.completion({
@@ -71,7 +71,7 @@ console.log(response.choices[0].message.content);
 ### SSE Streaming
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 // Use streaming output
 const stream = await adapter.completion({
@@ -94,7 +94,7 @@ for await (const chunk of stream) {
 When the primary model request fails, `ada-pter` supports automatic fallback to backup models, ensuring high service availability.
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 // The model field supports an array - models are tried in order, falling back on failure
 const response = await adapter.completion({
@@ -128,7 +128,7 @@ flowchart TB
 Map a specific condition to a provider instance. You can match by `provider`, `model` (the stripped name), or `modelId` (the full `provider/model` string).
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 import { autoProvider as openAiProvider } from "@ada-pter/openai";
 
 // Match by provider prefix (e.g. catches "openai/gpt-4o")
@@ -170,7 +170,7 @@ await myAdapter.completion({
 `ada-pter` is designed to be extremely easy to extend. You can define your own provider to take over specific requests, mock responses, or integrate internal company models.
 
 ```typescript
-import { adapter, defineProvider, jsonTransformer, sseTransformer, type ApiHandler } from "ada-pter";
+import { adapter, defineProvider, jsonTransformer, sseTransformer, type ApiHandler } from "@ada-pter/core";
 
 // 1. Define a custom provider
 const myCustomProvider = defineProvider({
@@ -215,7 +215,7 @@ console.log(response.choices[0].message.content); // "Response from custom provi
 ### Configuration Examples
 
 ```typescript
-import { adapter, defaults } from "ada-pter";
+import { adapter, defaults } from "@ada-pter/core";
 
 // 1. Modify the global default configuration
 defaults.maxRetries = 2;
@@ -244,7 +244,7 @@ await adapter.completion({
 `ada-pter` has a built-in request-level retry mechanism. You can control retries and backoff behavior via config; retryable failures (such as some 5xx and 429 responses) are retried automatically.
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 const response = await adapter.completion({
   model: "openai/gpt-4o",
@@ -262,7 +262,7 @@ console.log(response.choices[0].message.content);
 You can use `timeout` together with a custom `signal`. The framework composes both into a single cancellation signal so requests are stopped promptly on timeout or external abort.
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 const controller = new AbortController();
 
@@ -284,7 +284,7 @@ console.log(result.choices[0].message.content);
 The true power of `ada-pter` lies in its middleware engine. Requests and responses flow through a middleware stack (similar to Koa), allowing you to easily inject cross-cutting concerns.
 
 ```typescript
-import { AdaPter, type Middleware } from "ada-pter";
+import { AdaPter, type Middleware } from "@ada-pter/core";
 import { autoProvider as openAiProvider } from "@ada-pter/openai";
 
 // A simple logging middleware
@@ -328,7 +328,7 @@ You can use middlewares to implement:
 
 `ada-pter` is maintained as a Bun workspace monorepo. This structure keeps the core entirely decoupled from specific integrations.
 
-- `packages/ada-pter`: The core middleware engine, types, and utility functions.
+- `packages/@ada-pter/core`: The core middleware engine, types, and utility functions.
 - `packages/providers/*`: Official LLM provider adapters.
 - `packages/middlewares/*`: Optional, pre-built middlewares (e.g., logger).
 - `packages/integrations/*`: Optional integrations (e.g., RxJS bindings).

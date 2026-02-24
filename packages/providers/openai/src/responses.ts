@@ -6,14 +6,14 @@ import type {
   ResponseCreateRequest,
   ResponseInputItemsListRequest,
   ResponseRetrieveRequest,
-} from "ada-pter";
+} from "@ada-pter/core";
 import {
   buildQuery,
   joinPath,
   jsonTransformer,
   resolveApiPath,
   sseTransformer,
-} from "ada-pter";
+} from "@ada-pter/core";
 import type {
   ResponseCancelParams,
   ResponseDeleteParams,

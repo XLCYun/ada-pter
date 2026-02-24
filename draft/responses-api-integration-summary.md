@@ -1,6 +1,6 @@
 # Responses API Integration Summary (Core + OpenAI Provider)
 
-This document summarizes the implemented plan for integrating OpenAI Responses APIs into `ada-pter` core and `@ada-pter/openai`, including API typing, adapter method entrypoints, provider handler routing, and shared utility extraction.
+This document summarizes the implemented plan for integrating OpenAI Responses APIs into `@ada-pter/core` core and `@ada-pter/openai`, including API typing, adapter method entrypoints, provider handler routing, and shared utility extraction.
 
 ## 1. Goals
 
@@ -105,7 +105,7 @@ In `createRequestConfig`, `ResponseCreateRequest` fields are explicitly extracte
 
 - `buildQuery` has been centralized into core helper:
   - `packages/ada-pter/src/helpers/query.ts`
-- It is exported from `ada-pter` package entry and consumed in provider code.
+- It is exported from `@ada-pter/core` package entry and consumed in provider code.
 
 ## 6. Key Behavioral Decisions (Confirmed)
 

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "ada-pter": ["./packages/ada-pter/src/index.ts"],
+      "@ada-pter/core": ["./packages/ada-pter/src/index.ts"],
       "@ada-pter/openai": ["./packages/providers/openai/src/index.ts"],
       "@ada-pter/anthropic": ["./packages/providers/anthropic/src/index.ts"],
       "@ada-pter/rxjs": ["./packages/integrations/rxjs/src/index.ts"],
