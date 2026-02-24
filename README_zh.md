@@ -4,7 +4,7 @@
 
 **TypeScript 版的统一、类型安全的大模型适配层**
 
-[![npm version](https://img.shields.io/npm/v/@ada-pter/core.svg?style=flat-square)](https://www.npmjs.com/package/@ada-pter/core)
+[![npm version](https://img.shields.io/npm/v/%40ada-pter%2Fcore.svg?style=flat-square)](https://www.npmjs.com/package/@ada-pter/core)
 [![codecov](https://codecov.io/gh/XLCYun/ada-pter/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/XLCYun/ada-pter)
 [![CI Build](https://img.shields.io/github/actions/workflow/status/XLCYun/ada-pter/unit-tests.yml?branch=main&style=flat-square)](https://github.com/XLCYun/ada-pter/actions/workflows/unit-tests.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
