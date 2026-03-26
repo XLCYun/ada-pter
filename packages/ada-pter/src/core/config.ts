@@ -31,9 +31,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  * // => { timeout: 10000, maxRetries: 3, temperature: 0.7 }
  * ```
  */
-export function deepMerge(
-  ...sources: Array<Partial<AdapterConfig> | undefined>
-): AdapterConfig {
+export function deepMerge(...sources: Array<Partial<AdapterConfig> | undefined>): AdapterConfig {
   const result: Record<string, unknown> = {};
 
   sources
@@ -44,10 +42,7 @@ export function deepMerge(
         const dstVal = result[key];
         result[key] =
           isPlainObject(dstVal) && isPlainObject(srcVal)
-            ? deepMerge(
-                dstVal as Partial<AdapterConfig>,
-                srcVal as Partial<AdapterConfig>,
-              )
+            ? deepMerge(dstVal as Partial<AdapterConfig>, srcVal as Partial<AdapterConfig>)
             : srcVal;
       });
     });

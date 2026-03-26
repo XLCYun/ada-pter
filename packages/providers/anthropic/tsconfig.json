@@ -2,7 +2,12 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "baseUrl": "./",
+    "moduleResolution": "bundler",
+    "paths": {
+      "ada-pter": ["../../ada-pter/src/index"],
+      "ada-pter/*": ["../../ada-pter/src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "tests", "../../ada-pter/src"]
 }

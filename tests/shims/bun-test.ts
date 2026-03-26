@@ -1,14 +1,4 @@
-import {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  test,
-  vi,
-} from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, test, vi } from "vitest";
 
 type BunLikeMock = {
   <T extends (...args: any[]) => any>(impl?: T): ReturnType<typeof vi.fn<T>>;
@@ -22,15 +12,4 @@ mock.module = (name, factory) => {
   vi.doMock(name, factory);
 };
 
-export {
-  afterAll,
-  afterEach,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  mock,
-  test,
-  vi,
-};
+export { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, mock, test, vi };

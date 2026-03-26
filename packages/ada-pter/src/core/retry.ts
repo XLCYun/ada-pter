@@ -2,15 +2,9 @@ import { ProviderError, TimeoutError } from "../errors";
 import type { Middleware, RequestConfig } from "../types/core";
 
 type RetryContext = Parameters<Middleware>[0];
-type AttemptResult =
-  | { type: "success"; response: Response }
-  | { type: "retry" }
-  | { type: "throw"; error: unknown };
+type AttemptResult = { type: "success"; response: Response } | { type: "retry" } | { type: "throw"; error: unknown };
 
-const RETRYABLE_STATUSES = new Set([
-  408, 409, 425, 429, 500, 502, 503, 504, 507, 508, 509, 520, 521, 522, 523,
-  524,
-]);
+const RETRYABLE_STATUSES = new Set([408, 409, 425, 429, 500, 502, 503, 504, 507, 508, 509, 520, 521, 522, 523, 524]);
 const NON_RETRYABLE_STATUSES = new Set([501, 505]);
 
 const isRetryableStatus = (status: number): boolean => {
@@ -29,10 +23,7 @@ export class RetryController {
     this.maxRetryDelay = Math.max(0, ctx.config.maxRetryDelay ?? 0);
   }
 
-  async run(
-    request: RequestConfig,
-    onSuccess: (response: Response) => Promise<void>,
-  ): Promise<void> {
+  async run(request: RequestConfig, onSuccess: (response: Response) => Promise<void>): Promise<void> {
     const { url, ...init } = request;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
@@ -68,11 +59,7 @@ export class RetryController {
     }
   }
 
-  private async onHttpFailure(
-    res: Response,
-    attempt: number,
-    isLastAttempt: boolean,
-  ): Promise<AttemptResult> {
+  private async onHttpFailure(res: Response, attempt: number, isLastAttempt: boolean): Promise<AttemptResult> {
     const status = res.status;
 
     // HTTP retries only apply to retryable statuses and before the last attempt.
@@ -84,18 +71,12 @@ export class RetryController {
     }
 
     const retryAfterMs =
-      status === 429 || status === 503
-        ? this.parseRetryAfterMs(res.headers.get("retry-after"))
-        : undefined;
+      status === 429 || status === 503 ? this.parseRetryAfterMs(res.headers.get("retry-after")) : undefined;
     await this.sleepBackoff(attempt, retryAfterMs);
     return { type: "retry" };
   }
 
-  private async onError(
-    err: unknown,
-    attempt: number,
-    isLastAttempt: boolean,
-  ): Promise<AttemptResult> {
+  private async onError(err: unknown, attempt: number, isLastAttempt: boolean): Promise<AttemptResult> {
     const timeoutError = this.toTimeoutError();
     if (timeoutError) return { type: "throw", error: timeoutError };
     // ProviderError/TimeoutError are deterministic failures and should not be retried.
@@ -141,10 +122,7 @@ export class RetryController {
     return Math.max(0, dateMs - Date.now());
   }
 
-  private async sleepBackoff(
-    attempt: number,
-    retryAfterMs?: number,
-  ): Promise<void> {
+  private async sleepBackoff(attempt: number, retryAfterMs?: number): Promise<void> {
     const delay =
       retryAfterMs != null
         ? Math.min(retryAfterMs, this.maxRetryDelay)
@@ -157,12 +135,8 @@ export class RetryController {
     await this.sleepWithSignal(delay, this.ctx.signal);
   }
 
-  private async sleepWithSignal(
-    ms: number,
-    signal?: AbortSignal,
-  ): Promise<void> {
-    const abortError = () =>
-      signal?.reason ?? new DOMException("Aborted", "AbortError");
+  private async sleepWithSignal(ms: number, signal?: AbortSignal): Promise<void> {
+    const abortError = () => signal?.reason ?? new DOMException("Aborted", "AbortError");
 
     if (signal?.aborted) {
       throw abortError();

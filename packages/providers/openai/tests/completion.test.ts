@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  jsonTransformer,
-  sseTransformer,
-} from "../../../ada-pter/src/transformers";
+import { jsonTransformer, sseTransformer } from "../../../ada-pter/src/transformers";
 import { autoProvider } from "../src/completion";
 
 describe("@ada-pter/openai completion", () => {
@@ -183,8 +180,6 @@ describe("@ada-pter/openai completion", () => {
 
     const handler = autoProvider.getHandler(ctx)!;
 
-    expect(() => handler.getRequestConfig(ctx)).toThrow(
-      "No base URL or path provided",
-    );
+    expect(() => handler.getRequestConfig(ctx)).toThrow("No base URL or path provided");
   });
 });

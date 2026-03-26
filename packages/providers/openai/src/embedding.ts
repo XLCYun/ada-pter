@@ -8,8 +8,7 @@ const EMBEDDINGS_PATH = "/embeddings";
 const getRequestConfig = (ctx: AdapterContext): RequestConfig => {
   const cfg = ctx.config as unknown as EmbeddingCreateParams;
   const { base, headers } = resolveRequestBase(ctx);
-  const path =
-    resolveApiPath(ctx, { default: EMBEDDINGS_PATH }) ?? EMBEDDINGS_PATH;
+  const path = resolveApiPath(ctx, { default: EMBEDDINGS_PATH }) ?? EMBEDDINGS_PATH;
   const url = joinPath(base, path);
   const body: EmbeddingCreateParams = {
     input: cfg.input,

@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  arrayBufferTransformer,
-  sseTransformer,
-} from "../../../ada-pter/src/transformers";
+import { arrayBufferTransformer, sseTransformer } from "../../../ada-pter/src/transformers";
 import { autoProvider } from "../src/completion";
 
 const baseCtx = {

@@ -1,1 +1,1 @@
-export const name = "@ada-pter/anthropic";
+export { autoProvider, getProvider, name } from "./completion";

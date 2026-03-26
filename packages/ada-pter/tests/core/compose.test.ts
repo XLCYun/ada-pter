@@ -3,9 +3,7 @@ import { compose } from "../../src/core/compose";
 import type { AdapterContext, Middleware } from "../../src/types";
 
 /** Helper: create a minimal AdapterContext for testing. */
-function createTestContext(
-  overrides?: Partial<AdapterContext>,
-): AdapterContext {
+function createTestContext(overrides?: Partial<AdapterContext>): AdapterContext {
   return {
     apiType: "completion",
     request: { url: "" },
@@ -47,14 +45,7 @@ describe("compose", () => {
     const ctx = createTestContext();
     await compose([mw1, mw2, mw3])(ctx);
 
-    expect(order).toEqual([
-      "1-before",
-      "2-before",
-      "3-before",
-      "3-after",
-      "2-after",
-      "1-after",
-    ]);
+    expect(order).toEqual(["1-before", "2-before", "3-before", "3-after", "2-after", "1-after"]);
   });
 
   test("next() called multiple times throws error", async () => {
@@ -64,9 +55,7 @@ describe("compose", () => {
     };
 
     const ctx = createTestContext();
-    await expect(compose([mw])(ctx)).rejects.toThrow(
-      "next() called multiple times",
-    );
+    await expect(compose([mw])(ctx)).rejects.toThrow("next() called multiple times");
   });
 
   test("empty middleware stack resolves successfully", async () => {
@@ -92,9 +81,7 @@ describe("compose", () => {
     };
 
     const ctx = createTestContext();
-    await expect(compose([upstream, downstream])(ctx)).rejects.toThrow(
-      "downstream failure",
-    );
+    await expect(compose([upstream, downstream])(ctx)).rejects.toThrow("downstream failure");
     expect(caughtByUpstream).toBe(error);
   });
 
@@ -266,13 +253,7 @@ describe("compose", () => {
     const ctx = createTestContext();
     await compose([mw1, mw2, mw3])(ctx);
 
-    expect(order).toEqual([
-      "mw1-before",
-      "mw2-before",
-      "mw3",
-      "mw2-after",
-      "mw1-after",
-    ]);
+    expect(order).toEqual(["mw1-before", "mw2-before", "mw3", "mw2-after", "mw1-after"]);
   });
 
   test("handles large middleware stack without blowing the call stack", async () => {
@@ -280,24 +261,17 @@ describe("compose", () => {
     const after: string[] = [];
     const total = 50;
 
-    const middlewares: Middleware[] = Array.from(
-      { length: total },
-      (_, i) => async (_ctx, next) => {
-        before.push(`mw-${i}-before`);
-        await next();
-        after.push(`mw-${i}-after`);
-      },
-    );
+    const middlewares: Middleware[] = Array.from({ length: total }, (_, i) => async (_ctx, next) => {
+      before.push(`mw-${i}-before`);
+      await next();
+      after.push(`mw-${i}-after`);
+    });
 
     const ctx = createTestContext();
     await compose(middlewares)(ctx);
 
-    expect(before).toEqual(
-      Array.from({ length: total }, (_, i) => `mw-${i}-before`),
-    );
-    expect(after).toEqual(
-      Array.from({ length: total }, (_, i) => `mw-${i}-after`).reverse(),
-    );
+    expect(before).toEqual(Array.from({ length: total }, (_, i) => `mw-${i}-before`));
+    expect(after).toEqual(Array.from({ length: total }, (_, i) => `mw-${i}-after`).reverse());
   });
 
   test("reusing composed pipeline in parallel keeps contexts isolated", async () => {

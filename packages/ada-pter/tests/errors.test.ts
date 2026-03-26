@@ -1,11 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  AdaPterError,
-  NoProviderError,
-  ProviderError,
-  TimeoutError,
-  UnsupportedApiError,
-} from "../src/errors";
+import { AdaPterError, NoProviderError, ProviderError, TimeoutError, UnsupportedApiError } from "../src/errors";
 
 describe("AdaPterError", () => {
   test("sets message and name correctly", () => {
@@ -75,9 +69,7 @@ describe("UnsupportedApiError", () => {
   });
 
   test("formats message correctly", () => {
-    expect(err.message).toBe(
-      'Provider "anthropic" does not support API type "embedding"',
-    );
+    expect(err.message).toBe('Provider "anthropic" does not support API type "embedding"');
   });
 
   test("sets name to UnsupportedApiError", () => {
@@ -180,9 +172,7 @@ describe("error discrimination via instanceof in try/catch", () => {
     ];
 
     const providerErrors = errors.filter((e) => e instanceof ProviderError);
-    const unsupportedErrors = errors.filter(
-      (e) => e instanceof UnsupportedApiError,
-    );
+    const unsupportedErrors = errors.filter((e) => e instanceof UnsupportedApiError);
     const timeoutErrors = errors.filter((e) => e instanceof TimeoutError);
     const noProviderErrors = errors.filter((e) => e instanceof NoProviderError);
     const adapterErrors = errors.filter((e) => e instanceof AdaPterError);

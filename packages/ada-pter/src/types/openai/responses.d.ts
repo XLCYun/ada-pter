@@ -13,14 +13,7 @@ export namespace Shared {
     summary?: "auto" | "concise" | "detailed" | null;
   }
 
-  export type ReasoningEffort =
-    | "none"
-    | "minimal"
-    | "low"
-    | "medium"
-    | "high"
-    | "xhigh"
-    | null;
+  export type ReasoningEffort = "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | null;
 
   export interface ResponseFormatText {
     type: "text";
@@ -41,9 +34,7 @@ export namespace Shared {
     type: "and" | "or";
   }
 
-  export type CustomToolInputFormat =
-    | CustomToolInputFormat.Text
-    | CustomToolInputFormat.Grammar;
+  export type CustomToolInputFormat = CustomToolInputFormat.Text | CustomToolInputFormat.Grammar;
 
   export namespace CustomToolInputFormat {
     export interface Text {
@@ -79,11 +70,7 @@ export namespace ResponsesAPI {
 export interface ResponsePrompt {
   id: string;
   variables?: {
-    [key: string]:
-      | string
-      | ResponseInputText
-      | ResponseInputImage
-      | ResponseInputFile;
+    [key: string]: string | ResponseInputText | ResponseInputImage | ResponseInputFile;
   } | null;
   version?: string | null;
 }
@@ -92,9 +79,7 @@ export interface ContainerAuto {
   type: "container_auto";
   file_ids?: Array<string>;
   memory_limit?: "1g" | "4g" | "16g" | "64g" | null;
-  network_policy?:
-    | ResponsesAPI.ContainerNetworkPolicyDisabled
-    | ResponsesAPI.ContainerNetworkPolicyAllowlist;
+  network_policy?: ResponsesAPI.ContainerNetworkPolicyDisabled | ResponsesAPI.ContainerNetworkPolicyAllowlist;
   skills?: Array<SkillReference | InlineSkill>;
 }
 
@@ -141,13 +126,7 @@ export type ResponseOutputItem =
   | ResponseInputItem.McpApprovalRequest
   | ResponseCustomToolCall;
 
-export type ResponseStatus =
-  | "completed"
-  | "failed"
-  | "in_progress"
-  | "cancelled"
-  | "queued"
-  | "incomplete";
+export type ResponseStatus = "completed" | "failed" | "in_progress" | "cancelled" | "queued" | "incomplete";
 
 export interface ResponseUsage {
   input_tokens: number;
@@ -204,9 +183,7 @@ export interface ResponseFunctionShellToolCallOutput {
 
 export namespace ResponseFunctionShellToolCallOutput {
   export interface Output {
-    outcome:
-      | ResponseFunctionShellCallOutputContent.Timeout
-      | ResponseFunctionShellCallOutputContent.Exit;
+    outcome: ResponseFunctionShellCallOutputContent.Timeout | ResponseFunctionShellCallOutputContent.Exit;
     stderr: string;
     stdout: string;
   }
@@ -396,9 +373,7 @@ export namespace Tool {
       type: "auto";
       file_ids?: Array<string>;
       memory_limit?: "1g" | "4g" | "16g" | "64g" | null;
-      network_policy?:
-        | ResponsesAPI.ContainerNetworkPolicyDisabled
-        | ResponsesAPI.ContainerNetworkPolicyAllowlist;
+      network_policy?: ResponsesAPI.ContainerNetworkPolicyDisabled | ResponsesAPI.ContainerNetworkPolicyAllowlist;
     }
   }
 
@@ -408,11 +383,7 @@ export namespace Tool {
     background?: "transparent" | "opaque" | "auto";
     input_fidelity?: "high" | "low" | null;
     input_image_mask?: ImageGeneration.InputImageMask;
-    model?:
-      | (string & {})
-      | "gpt-image-1"
-      | "gpt-image-1-mini"
-      | "gpt-image-1.5";
+    model?: (string & {}) | "gpt-image-1" | "gpt-image-1-mini" | "gpt-image-1.5";
     moderation?: "auto" | "low";
     output_compression?: number;
     output_format?: "png" | "webp" | "jpeg";
@@ -453,13 +424,7 @@ export interface WebSearchPreviewTool {
 
 export namespace WebSearchPreviewTool {
   export interface UserLocation {
-    type:
-      | "approximate"
-      | "country"
-      | "city"
-      | "region"
-      | "postal_code"
-      | "ip_address";
+    type: "approximate" | "country" | "city" | "region" | "postal_code" | "ip_address";
     country?: string;
     region?: string;
     city?: string;
@@ -612,10 +577,7 @@ export interface EasyInputMessage {
 
 export type ResponseInputMessageContentList = Array<ResponseInputContent>;
 
-export type ResponseInputContent =
-  | ResponseInputText
-  | ResponseInputImage
-  | ResponseInputFile;
+export type ResponseInputContent = ResponseInputText | ResponseInputImage | ResponseInputFile;
 
 export interface ResponseInputText {
   text: string;
@@ -658,9 +620,7 @@ export interface LocalSkill {
 }
 
 export interface ResponseFunctionShellCallOutputContent {
-  outcome:
-    | ResponseFunctionShellCallOutputContent.Timeout
-    | ResponseFunctionShellCallOutputContent.Exit;
+  outcome: ResponseFunctionShellCallOutputContent.Timeout | ResponseFunctionShellCallOutputContent.Exit;
   stderr: string;
   stdout: string;
 }
@@ -700,8 +660,7 @@ export type ResponseFunctionCallOutputItem =
   | ResponseInputImageContent
   | ResponseInputFileContent;
 
-export type ResponseFunctionCallOutputItemList =
-  Array<ResponseFunctionCallOutputItem>;
+export type ResponseFunctionCallOutputItemList = Array<ResponseFunctionCallOutputItem>;
 
 export namespace ResponseInputItem {
   export interface Message {
@@ -797,10 +756,7 @@ export namespace ResponseInputItem {
 
   export interface ApplyPatchCall {
     call_id: string;
-    operation:
-      | ApplyPatchCall.CreateFile
-      | ApplyPatchCall.DeleteFile
-      | ApplyPatchCall.UpdateFile;
+    operation: ApplyPatchCall.CreateFile | ApplyPatchCall.DeleteFile | ApplyPatchCall.UpdateFile;
     status: "in_progress" | "completed";
     type: "apply_patch_call";
     id?: string | null;
@@ -1059,10 +1015,7 @@ export namespace ResponseComputerToolCall {
 
 export interface ResponseFunctionWebSearch {
   id: string;
-  action:
-    | ResponseFunctionWebSearch.Search
-    | ResponseFunctionWebSearch.OpenPage
-    | ResponseFunctionWebSearch.Find;
+  action: ResponseFunctionWebSearch.Search | ResponseFunctionWebSearch.OpenPage | ResponseFunctionWebSearch.Find;
   status: "in_progress" | "searching" | "completed" | "failed";
   type: "web_search_call";
 }
@@ -1134,15 +1087,8 @@ export interface ResponseCodeInterpreterToolCall {
   id: string;
   code: string | null;
   container_id: string;
-  outputs: Array<
-    ResponseCodeInterpreterToolCall.Logs | ResponseCodeInterpreterToolCall.Image
-  > | null;
-  status:
-    | "in_progress"
-    | "completed"
-    | "incomplete"
-    | "interpreting"
-    | "failed";
+  outputs: Array<ResponseCodeInterpreterToolCall.Logs | ResponseCodeInterpreterToolCall.Image> | null;
+  status: "in_progress" | "completed" | "incomplete" | "interpreting" | "failed";
   type: "code_interpreter_call";
 }
 
@@ -1168,26 +1114,20 @@ export interface ResponseCustomToolCall {
 
 export interface ResponseCustomToolCallOutput {
   call_id: string;
-  output:
-    | string
-    | Array<ResponseInputText | ResponseInputImage | ResponseInputFile>;
+  output: string | Array<ResponseInputText | ResponseInputImage | ResponseInputFile>;
   type: "custom_tool_call_output";
   id?: string;
 }
 
-export interface ResponseCreateParamsNonStreaming
-  extends ResponseCreateParamsBase {
+export interface ResponseCreateParamsNonStreaming extends ResponseCreateParamsBase {
   stream?: false | null;
 }
 
-export interface ResponseCreateParamsStreaming
-  extends ResponseCreateParamsBase {
+export interface ResponseCreateParamsStreaming extends ResponseCreateParamsBase {
   stream: true;
 }
 
-export type ResponseCreateParams =
-  | ResponseCreateParamsNonStreaming
-  | ResponseCreateParamsStreaming;
+export type ResponseCreateParams = ResponseCreateParamsNonStreaming | ResponseCreateParamsStreaming;
 
 export interface Response {
   id: string;
@@ -1290,19 +1230,15 @@ export interface ResponseRetrieveParamsBase {
   stream?: boolean;
 }
 
-export interface ResponseRetrieveParamsNonStreaming
-  extends ResponseRetrieveParamsBase {
+export interface ResponseRetrieveParamsNonStreaming extends ResponseRetrieveParamsBase {
   stream?: false;
 }
 
-export interface ResponseRetrieveParamsStreaming
-  extends ResponseRetrieveParamsBase {
+export interface ResponseRetrieveParamsStreaming extends ResponseRetrieveParamsBase {
   stream: true;
 }
 
-export type ResponseRetrieveParams =
-  | ResponseRetrieveParamsNonStreaming
-  | ResponseRetrieveParamsStreaming;
+export type ResponseRetrieveParams = ResponseRetrieveParamsNonStreaming | ResponseRetrieveParamsStreaming;
 
 // ---------------------------------------
 // Streaming Response Events
@@ -1447,10 +1383,7 @@ export interface ResponseContentPartAddedEvent {
   content_index: number;
   item_id: string;
   output_index: number;
-  part:
-    | ResponseOutputText
-    | ResponseOutputRefusal
-    | ResponseContentPartAddedEvent.ReasoningText;
+  part: ResponseOutputText | ResponseOutputRefusal | ResponseContentPartAddedEvent.ReasoningText;
   sequence_number: number;
   type: "response.content_part.added";
 }
@@ -1891,9 +1824,7 @@ export interface ResponseFunctionToolCallItem extends ResponseFunctionToolCall {
 export interface ResponseFunctionToolCallOutputItem {
   id: string;
   call_id: string;
-  output:
-    | string
-    | Array<ResponseInputText | ResponseInputImage | ResponseInputFile>;
+  output: string | Array<ResponseInputText | ResponseInputImage | ResponseInputFile>;
   type: "function_call_output";
   status?: "in_progress" | "completed" | "incomplete";
 }

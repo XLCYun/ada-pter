@@ -26,9 +26,7 @@ export function createRequestMiddleware(): Middleware {
       if (!handler) throw new Error("[request] no handler found"); // should not happen
 
       const transformers =
-        handler.responseTransformers.length === 0
-          ? autoResponseTransformers
-          : handler.responseTransformers;
+        handler.responseTransformers.length === 0 ? autoResponseTransformers : handler.responseTransformers;
 
       for (const transformer of transformers) {
         await transformer(ctx);

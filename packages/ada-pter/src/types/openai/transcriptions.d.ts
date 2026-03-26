@@ -13,10 +13,7 @@ export interface TranscriptionsAPI {
     body: TranscriptionCreateParamsNonStreaming<"srt" | "vtt" | "text">,
     options?: RequestOptions,
   ): APIPromise<string>;
-  create(
-    body: TranscriptionCreateParamsNonStreaming,
-    options?: RequestOptions,
-  ): APIPromise<Transcription>;
+  create(body: TranscriptionCreateParamsNonStreaming, options?: RequestOptions): APIPromise<Transcription>;
   create(
     body: TranscriptionCreateParamsStreaming,
     options?: RequestOptions,
@@ -24,15 +21,11 @@ export interface TranscriptionsAPI {
   create(
     body: TranscriptionCreateParamsStreaming,
     options?: RequestOptions,
-  ): APIPromise<
-    TranscriptionCreateResponse | string | Stream<TranscriptionStreamEvent>
-  >;
+  ): APIPromise<TranscriptionCreateResponse | string | Stream<TranscriptionStreamEvent>>;
   create(
     body: TranscriptionCreateParams,
     options?: RequestOptions,
-  ): APIPromise<
-    TranscriptionCreateResponse | string | Stream<TranscriptionStreamEvent>
-  >;
+  ): APIPromise<TranscriptionCreateResponse | string | Stream<TranscriptionStreamEvent>>;
 }
 
 export type APIPromise<T> = Promise<T>;
@@ -49,13 +42,7 @@ export type Uploadable = Blob | File | Buffer | string;
 
 export type AudioModel = string;
 
-export type AudioResponseFormat =
-  | "json"
-  | "text"
-  | "srt"
-  | "verbose_json"
-  | "vtt"
-  | "diarized_json";
+export type AudioResponseFormat = "json" | "text" | "srt" | "verbose_json" | "vtt" | "diarized_json";
 
 export interface Transcription {
   text: string;
@@ -210,23 +197,14 @@ export interface TranscriptionWord {
   word: string;
 }
 
-export type TranscriptionCreateResponse =
-  | Transcription
-  | TranscriptionDiarized
-  | TranscriptionVerbose;
+export type TranscriptionCreateResponse = Transcription | TranscriptionDiarized | TranscriptionVerbose;
 
 export type TranscriptionCreateParams<
-  ResponseFormat extends AudioResponseFormat | undefined =
-    | AudioResponseFormat
-    | undefined,
-> =
-  | TranscriptionCreateParamsNonStreaming<ResponseFormat>
-  | TranscriptionCreateParamsStreaming;
+  ResponseFormat extends AudioResponseFormat | undefined = AudioResponseFormat | undefined,
+> = TranscriptionCreateParamsNonStreaming<ResponseFormat> | TranscriptionCreateParamsStreaming;
 
 export interface TranscriptionCreateParamsBase<
-  ResponseFormat extends AudioResponseFormat | undefined =
-    | AudioResponseFormat
-    | undefined,
+  ResponseFormat extends AudioResponseFormat | undefined = AudioResponseFormat | undefined,
 > {
   file: Uploadable;
   model: (string & {}) | AudioModel;
@@ -250,14 +228,11 @@ export interface VadConfig {
 }
 
 export interface TranscriptionCreateParamsNonStreaming<
-  ResponseFormat extends AudioResponseFormat | undefined =
-    | AudioResponseFormat
-    | undefined,
+  ResponseFormat extends AudioResponseFormat | undefined = AudioResponseFormat | undefined,
 > extends TranscriptionCreateParamsBase<ResponseFormat> {
   stream?: false | null;
 }
 
-export interface TranscriptionCreateParamsStreaming
-  extends TranscriptionCreateParamsBase {
+export interface TranscriptionCreateParamsStreaming extends TranscriptionCreateParamsBase {
   stream: true;
 }

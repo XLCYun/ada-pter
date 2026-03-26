@@ -2,9 +2,7 @@ import type { AdapterContext } from "../types/core";
 import type { Provider } from "../types/provider";
 
 export type AutoProviderModule = { autoProvider?: Provider };
-export type AutoProviderImporter = (
-  packageName: string,
-) => Promise<AutoProviderModule>;
+export type AutoProviderImporter = (packageName: string) => Promise<AutoProviderModule>;
 
 export type AutoLoaderOptions = {
   // for unit test
@@ -12,8 +10,7 @@ export type AutoLoaderOptions = {
   packagePrefix?: string;
 };
 
-const defaultImporter: AutoProviderImporter = (packageName) =>
-  import(packageName);
+const defaultImporter: AutoProviderImporter = (packageName) => import(packageName);
 
 /**
  * AutoLoader is the implementation behind autoRoute().
@@ -53,9 +50,7 @@ export class AutoLoader {
     return provider;
   }
 
-  private normalizeProviderName(
-    providerName: string | undefined,
-  ): string | null {
+  private normalizeProviderName(providerName: string | undefined): string | null {
     if (!providerName) return null;
     return providerName === "custom" ? "openai" : providerName.toLowerCase();
   }
@@ -64,9 +59,7 @@ export class AutoLoader {
    * Attempt to dynamically import and instantiate a provider package.
    * Returns null if the package is not installed or fails to load.
    */
-  private async resolveProvider(
-    providerName: string,
-  ): Promise<Provider | null> {
+  private async resolveProvider(providerName: string): Promise<Provider | null> {
     // Avoid repeated dynamic imports when we already know it fails.
     if (this.failedImports.has(providerName)) return null;
 

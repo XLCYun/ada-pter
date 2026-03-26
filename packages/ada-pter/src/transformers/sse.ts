@@ -20,9 +20,7 @@ function extractSseData(rawEvent: string): string | null {
   return dataLines.join("\n");
 }
 
-async function* sseDataIterator(
-  body: ReadableStream<Uint8Array>,
-): AsyncIterable<string> {
+async function* sseDataIterator(body: ReadableStream<Uint8Array>): AsyncIterable<string> {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -61,9 +59,7 @@ async function* sseDataIterator(
   }
 }
 
-export function createSseTransformer(
-  _options: SseTransformerOptions = {},
-): ResponseTransformer {
+export function createSseTransformer(_options: SseTransformerOptions = {}): ResponseTransformer {
   return async (ctx) => {
     const raw = ctx.response.raw;
     if (!raw) return;
@@ -80,10 +76,7 @@ export function createSseTransformer(
     ctx.response.data = (async function* () {
       for await (const data of sseDataIterator(body)) {
         const trimmed = data.trim();
-        if (
-          (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
-          (trimmed.startsWith("[") && trimmed.endsWith("]"))
-        ) {
+        if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
           try {
             yield JSON.parse(trimmed) as unknown;
             continue;

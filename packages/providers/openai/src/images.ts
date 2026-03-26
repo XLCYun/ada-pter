@@ -1,10 +1,5 @@
 import type { AdapterContext, ApiHandler, RequestConfig } from "ada-pter";
-import {
-  joinPath,
-  jsonTransformer,
-  resolveApiPath,
-  sseTransformer,
-} from "ada-pter";
+import { joinPath, jsonTransformer, resolveApiPath, sseTransformer } from "ada-pter";
 import type { ImageGenerateParamsBase } from "ada-pter/types/openai/images";
 import { resolveRequestBase } from "./utils";
 
@@ -57,7 +52,5 @@ const streamingImageGenerationHandler: ApiHandler = {
 
 export function getImagesHandler(ctx: AdapterContext): ApiHandler | null {
   if (ctx.apiType !== "image.generation") return null;
-  return ctx.config.stream
-    ? streamingImageGenerationHandler
-    : imageGenerationHandler;
+  return ctx.config.stream ? streamingImageGenerationHandler : imageGenerationHandler;
 }

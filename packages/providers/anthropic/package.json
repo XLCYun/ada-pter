@@ -18,6 +18,7 @@
     "dev": "tsdown --watch"
   },
   "dependencies": {
-    "ada-pter": "workspace:*"
+    "ada-pter": "workspace:*",
+    "js-tiktoken": "^1.0.21"
   }
 }
