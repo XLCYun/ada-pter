@@ -1,10 +1,5 @@
 import type { AdapterContext, ApiHandler, RequestConfig } from "ada-pter";
-import {
-  joinPath,
-  jsonTransformer,
-  resolveApiPath,
-  sseTransformer,
-} from "ada-pter";
+import { joinPath, jsonTransformer, resolveApiPath, sseTransformer } from "ada-pter";
 import type { TranscriptionCreateParamsBase } from "ada-pter/types/openai/transcriptions";
 import { resolveRequestBase } from "./utils";
 
@@ -19,10 +14,7 @@ const appendField = (form: FormData, key: string, value: unknown) => {
   form.append(key, value as Blob | string);
 };
 
-const buildFormData = (
-  cfg: TranscriptionCreateParamsBase,
-  model: string,
-): FormData => {
+const buildFormData = (cfg: TranscriptionCreateParamsBase, model: string): FormData => {
   const form = new FormData();
   form.append("file", cfg.file as Blob | string);
   form.append("model", model);
@@ -44,8 +36,7 @@ const getRequestConfig = (ctx: AdapterContext): RequestConfig => {
   const { base, headers } = resolveRequestBase(ctx);
   headers.delete("Content-Type");
 
-  const path =
-    resolveApiPath(ctx, { default: TRANSCRIPTION_PATH }) ?? TRANSCRIPTION_PATH;
+  const path = resolveApiPath(ctx, { default: TRANSCRIPTION_PATH }) ?? TRANSCRIPTION_PATH;
   const url = joinPath(base, path);
   const body = buildFormData(cfg, ctx.model);
 
@@ -67,11 +58,7 @@ const streamingTranscriptionHandler: ApiHandler = {
   responseTransformers: [sseTransformer],
 };
 
-export function getTranscriptionHandler(
-  ctx: AdapterContext,
-): ApiHandler | null {
+export function getTranscriptionHandler(ctx: AdapterContext): ApiHandler | null {
   if (ctx.apiType !== "transcription") return null;
-  return ctx.config.stream
-    ? streamingTranscriptionHandler
-    : transcriptionHandler;
+  return ctx.config.stream ? streamingTranscriptionHandler : transcriptionHandler;
 }

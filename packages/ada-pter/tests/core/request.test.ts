@@ -44,8 +44,7 @@ function makeProvider(name: string, handler?: ApiHandler | null): Provider {
  */
 function makeCtx(overrides: Partial<AdapterContext> = {}): AdapterContext {
   const provider = overrides.provider ?? makeProvider("test");
-  const handler =
-    overrides.handler ?? provider.getHandler({} as AdapterContext) ?? undefined;
+  const handler = overrides.handler ?? provider.getHandler({} as AdapterContext) ?? undefined;
   const model = overrides.model ?? "gpt-4";
   const providerKey = overrides.providerKey ?? "test";
   const normModel = overrides.normModel ?? model.toLowerCase();
@@ -292,11 +291,7 @@ describe("request middleware: execution", () => {
   });
 
   test("default sseTransformer stops on [DONE] marker", async () => {
-    const sseBody = [
-      'data: {"a":1}\n\n',
-      "data: [DONE]\n\n",
-      "data: should-not-appear\n\n",
-    ].join("");
+    const sseBody = ['data: {"a":1}\n\n', "data: [DONE]\n\n", "data: should-not-appear\n\n"].join("");
 
     mockFetch.mockImplementationOnce(() =>
       Promise.resolve(
@@ -353,9 +348,7 @@ describe("request middleware: execution", () => {
   });
 
   test("non-ok fetch throws ProviderError", async () => {
-    mockFetch.mockImplementationOnce(() =>
-      Promise.resolve(new Response("Rate limit exceeded", { status: 429 })),
-    );
+    mockFetch.mockImplementationOnce(() => Promise.resolve(new Response("Rate limit exceeded", { status: 429 })));
 
     const provider = makeProvider("openai");
     const handler = provider.getHandler({} as AdapterContext) ?? undefined;
@@ -371,9 +364,7 @@ describe("request middleware: execution", () => {
   });
 
   test("non-ok fetch falls back to 'unknown' provider name", async () => {
-    mockFetch.mockImplementationOnce(() =>
-      Promise.resolve(new Response("auth required", { status: 401 })),
-    );
+    mockFetch.mockImplementationOnce(() => Promise.resolve(new Response("auth required", { status: 401 })));
 
     const mw = createRequestMiddleware();
     const ctx = makeCtx({ provider: undefined, handler: undefined });
@@ -388,9 +379,7 @@ describe("request middleware: execution", () => {
     const mw = createRequestMiddleware();
     const ctx = makeCtx({ handler: undefined });
 
-    await expect(mw(ctx, async () => {})).rejects.toThrow(
-      "[request] no handler found",
-    );
+    await expect(mw(ctx, async () => {})).rejects.toThrow("[request] no handler found");
   });
 
   test("propagates fetch rejection errors", async () => {
@@ -405,10 +394,7 @@ describe("request middleware: execution", () => {
   });
 
   test("translates timeout abort into TimeoutError when signal timed out", async () => {
-    const abortErr = new DOMException(
-      "The operation was aborted.",
-      "AbortError",
-    );
+    const abortErr = new DOMException("The operation was aborted.", "AbortError");
     mockFetch.mockImplementationOnce(() => Promise.reject(abortErr));
 
     const mw = createRequestMiddleware();
@@ -427,10 +413,7 @@ describe("request middleware: execution", () => {
   });
 
   test("preserves non-timeout abort reasons", async () => {
-    const abortErr = new DOMException(
-      "The operation was aborted.",
-      "AbortError",
-    );
+    const abortErr = new DOMException("The operation was aborted.", "AbortError");
     mockFetch.mockImplementationOnce(() => Promise.reject(abortErr));
 
     const mw = createRequestMiddleware();
@@ -446,9 +429,7 @@ describe("request middleware: execution", () => {
   });
 
   test("non-ok fetch still saves raw Response to ctx.response.raw", async () => {
-    mockFetch.mockImplementationOnce(() =>
-      Promise.resolve(new Response("Rate limit exceeded", { status: 429 })),
-    );
+    mockFetch.mockImplementationOnce(() => Promise.resolve(new Response("Rate limit exceeded", { status: 429 })));
 
     const mw = createRequestMiddleware();
     const ctx = makeCtx();

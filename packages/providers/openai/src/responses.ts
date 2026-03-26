@@ -7,17 +7,8 @@ import type {
   ResponseInputItemsListRequest,
   ResponseRetrieveRequest,
 } from "ada-pter";
-import {
-  buildQuery,
-  joinPath,
-  jsonTransformer,
-  resolveApiPath,
-  sseTransformer,
-} from "ada-pter";
-import type {
-  ResponseCancelParams,
-  ResponseDeleteParams,
-} from "ada-pter/types/openai/responses";
+import { buildQuery, joinPath, jsonTransformer, resolveApiPath, sseTransformer } from "ada-pter";
+import type { ResponseCancelParams, ResponseDeleteParams } from "ada-pter/types/openai/responses";
 import { resolveRequestBase } from "./utils";
 
 const RESPONSES_PATH = "/responses";
@@ -55,8 +46,7 @@ const createRequestConfig = (ctx: AdapterContext): RequestConfig => {
     user: cfg.user,
   };
   const { base, headers } = resolveRequestBase(ctx);
-  const path =
-    resolveApiPath(ctx, { default: RESPONSES_PATH }) ?? RESPONSES_PATH;
+  const path = resolveApiPath(ctx, { default: RESPONSES_PATH }) ?? RESPONSES_PATH;
   const url = joinPath(base, path);
   return {
     url,

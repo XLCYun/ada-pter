@@ -5,38 +5,26 @@ import { deepMerge } from "../../src/core/config";
 
 describe("isPlainObject (internal logic via deepMerge)", () => {
   test("plain objects are merged recursively", () => {
-    const result = deepMerge(
-      { nested: { a: 1, b: 2 } } as any,
-      { nested: { b: 3, c: 4 } } as any,
-    );
+    const result = deepMerge({ nested: { a: 1, b: 2 } } as any, { nested: { b: 3, c: 4 } } as any);
     expect(result).toEqual({ nested: { a: 1, b: 3, c: 4 } });
   });
 
   test("arrays are not merged recursively (replaced entirely)", () => {
-    const result = deepMerge(
-      { config: { models: ["a", "b"] } } as any,
-      { config: { models: ["c"] } } as any,
-    );
+    const result = deepMerge({ config: { models: ["a", "b"] } } as any, { config: { models: ["c"] } } as any);
     expect(result).toEqual({ config: { models: ["c"] } });
   });
 
   test("Date objects are replaced (not merged)", () => {
     const date1 = new Date("2023-01-01");
     const date2 = new Date("2023-12-31");
-    const result = deepMerge(
-      { timestamp: date1 } as any,
-      { timestamp: date2 } as any,
-    );
+    const result = deepMerge({ timestamp: date1 } as any, { timestamp: date2 } as any);
     expect((result as any).timestamp).toBe(date2);
   });
 
   test("RegExp objects are replaced (not merged)", () => {
     const regex1 = /test/g;
     const regex2 = /pattern/i;
-    const result = deepMerge(
-      { pattern: regex1 } as any,
-      { pattern: regex2 } as any,
-    );
+    const result = deepMerge({ pattern: regex1 } as any, { pattern: regex2 } as any);
     expect((result as any).pattern).toBe(regex2);
   });
 
@@ -57,20 +45,14 @@ describe("isPlainObject (internal logic via deepMerge)", () => {
     }
     const custom1 = new CustomConfig("first");
     const custom2 = new CustomConfig("second");
-    const result = deepMerge(
-      { config: custom1 } as any,
-      { config: custom2 } as any,
-    );
+    const result = deepMerge({ config: custom1 } as any, { config: custom2 } as any);
     expect((result as any).config).toBe(custom2);
   });
 });
 
 describe("deepMerge", () => {
   test("merges flat objects (later overrides earlier)", () => {
-    const result = deepMerge(
-      { timeout: 5000, maxRetries: 3 },
-      { timeout: 10000 },
-    );
+    const result = deepMerge({ timeout: 5000, maxRetries: 3 }, { timeout: 10000 });
     expect(result).toEqual({ timeout: 10000, maxRetries: 3 });
   });
 
@@ -127,20 +109,12 @@ describe("deepMerge", () => {
   });
 
   test("arrays are replaced entirely (not concatenated)", () => {
-    const result = deepMerge(
-      { model: ["model-a", "model-b"] },
-      { model: ["model-c"] },
-    );
+    const result = deepMerge({ model: ["model-a", "model-b"] }, { model: ["model-c"] });
     expect(result).toEqual({ model: ["model-c"] });
   });
 
   test("undefined sources are skipped", () => {
-    const result = deepMerge(
-      { timeout: 5000 },
-      undefined,
-      { maxRetries: 2 },
-      undefined,
-    );
+    const result = deepMerge({ timeout: 5000 }, undefined, { maxRetries: 2 }, undefined);
     expect(result).toEqual({ timeout: 5000, maxRetries: 2 });
   });
 
@@ -180,10 +154,7 @@ describe("deepMerge", () => {
   });
 
   test("null field values overwrite existing values", () => {
-    const result = deepMerge(
-      { timeout: 5000 },
-      { timeout: null as unknown as number },
-    );
+    const result = deepMerge({ timeout: 5000 }, { timeout: null as unknown as number });
     expect(result.timeout).toBeNull();
   });
 
@@ -195,10 +166,7 @@ describe("deepMerge", () => {
   });
 
   test("model array fallback: call-level replaces API-level", () => {
-    const result = deepMerge(
-      { model: ["gpt-4", "claude-3-opus"] },
-      { model: "gpt-4o" },
-    );
+    const result = deepMerge({ model: ["gpt-4", "claude-3-opus"] }, { model: "gpt-4o" });
     expect(result).toEqual({ model: "gpt-4o" });
   });
 
@@ -223,24 +191,15 @@ describe("deepMerge", () => {
   });
 
   test("call-level temperature overrides API-level", () => {
-    const result = deepMerge(
-      { temperature: 0.5 },
-      { temperature: 0.7 },
-      { temperature: 0.9 },
-    );
+    const result = deepMerge({ temperature: 0.5 }, { temperature: 0.7 }, { temperature: 0.9 });
     expect(result.temperature).toBe(0.9);
   });
 
   test("messages array is replaced entirely by call-level", () => {
-    const globalMessages = [
-      { role: "system" as const, content: "You are helpful." },
-    ];
+    const globalMessages = [{ role: "system" as const, content: "You are helpful." }];
     const callMessages = [{ role: "user" as const, content: "Hello" }];
 
-    const result = deepMerge(
-      { messages: globalMessages },
-      { messages: callMessages },
-    );
+    const result = deepMerge({ messages: globalMessages }, { messages: callMessages });
     expect(result.messages).toEqual(callMessages);
     expect(result.messages).toHaveLength(1);
   });
@@ -277,10 +236,7 @@ describe("deepMerge", () => {
   });
 
   test("preserves undefined values in nested objects", () => {
-    const result = deepMerge(
-      { nested: { a: 1, b: 2 } } as any,
-      { nested: { a: undefined, c: 3 } } as any,
-    );
+    const result = deepMerge({ nested: { a: 1, b: 2 } } as any, { nested: { a: undefined, c: 3 } } as any);
     expect(result).toEqual({ nested: { a: undefined, b: 2, c: 3 } });
   });
 
@@ -376,10 +332,7 @@ describe("deepMerge", () => {
     const abortController1 = new AbortController();
     const abortController2 = new AbortController();
 
-    const result = deepMerge(
-      { signal: abortController1.signal, timeout: 5000 },
-      { signal: abortController2.signal },
-    );
+    const result = deepMerge({ signal: abortController1.signal, timeout: 5000 }, { signal: abortController2.signal });
 
     expect(result.signal).toBe(abortController2.signal);
     expect(result.timeout).toBe(5000);
@@ -465,10 +418,7 @@ describe("deepMerge - Enhanced Edge Cases", () => {
   });
 
   test("handles BigInt values", () => {
-    const result = deepMerge(
-      { big: BigInt(1) } as any,
-      { big: BigInt(2) } as any,
-    );
+    const result = deepMerge({ big: BigInt(1) } as any, { big: BigInt(2) } as any);
     expect((result as any).big).toBe(BigInt(2));
   });
 
@@ -642,11 +592,7 @@ describe("deepMerge - Integration Scenarios", () => {
 
     // Simulate merging global -> provider -> call
     const openaiResult = deepMerge(globalConfig, openaiConfig, callConfig);
-    const anthropicResult = deepMerge(
-      globalConfig,
-      anthropicConfig,
-      callConfig,
-    );
+    const anthropicResult = deepMerge(globalConfig, anthropicConfig, callConfig);
 
     expect(openaiResult.timeout).toBe(60000);
     expect(openaiResult.model).toBe("gpt-4");
@@ -682,12 +628,7 @@ describe("deepMerge - Integration Scenarios", () => {
       max_tokens: 1024,
     };
 
-    const result = deepMerge(
-      defaults,
-      userDefaults,
-      workspaceConfig,
-      requestConfig,
-    );
+    const result = deepMerge(defaults, userDefaults, workspaceConfig, requestConfig);
 
     // Verify precedence: request > workspace > user > defaults
     expect(result.timeout).toBe(60000); // from userDefaults

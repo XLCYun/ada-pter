@@ -8,5 +8,4 @@ export function createArrayBufferTransformer(): ResponseTransformer {
   };
 }
 
-export const arrayBufferTransformer: ResponseTransformer =
-  createArrayBufferTransformer();
+export const arrayBufferTransformer: ResponseTransformer = createArrayBufferTransformer();

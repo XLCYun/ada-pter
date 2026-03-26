@@ -34,9 +34,7 @@ export interface ResponseRetrieveRequest extends AdapterConfig {
 export type ResponseRetrieveResponse = Response;
 export type ResponseRetrieveStreamChunk = ResponseStreamEvent;
 
-export interface ResponseInputItemsListRequest
-  extends InputItemListParams,
-    AdapterConfig {
+export interface ResponseInputItemsListRequest extends InputItemListParams, AdapterConfig {
   response_id: string;
 }
 export type ResponseInputItemsListResponse = ResponseItemsPage;

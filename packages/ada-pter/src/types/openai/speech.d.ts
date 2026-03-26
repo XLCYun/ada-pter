@@ -1,10 +1,7 @@
 // Standalone type definitions for audio.speech.create
 
 export interface SpeechAPI {
-  create(
-    body: SpeechCreateParams,
-    options?: RequestOptions,
-  ): APIPromise<Response>;
+  create(body: SpeechCreateParams, options?: RequestOptions): APIPromise<Response>;
 }
 
 export type APIPromise<T> = Promise<T>;
@@ -47,14 +44,7 @@ export interface SpeechCreateParams {
   instructions?: string;
 
   /** Output format. Supported: `mp3`, `opus`, `aac`, `flac`, `wav`, `pcm`. */
-  response_format?:
-    | "mp3"
-    | "opus"
-    | "aac"
-    | "flac"
-    | "wav"
-    | "pcm"
-    | (string & {});
+  response_format?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm" | (string & {});
 
   /** Speed of the generated audio (0.25–4.0). Default is 1.0. */
   speed?: number;

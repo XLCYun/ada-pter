@@ -41,21 +41,14 @@ function makeCtx(overrides: Partial<AdapterContext> = {}): AdapterContext {
   };
 }
 
-function makeProvider(
-  name: string,
-  handler: ApiHandler = makeHandler(),
-): Provider {
+function makeProvider(name: string, handler: ApiHandler = makeHandler()): Provider {
   return {
     name,
     getHandler: () => handler,
   };
 }
 
-function createImporter(
-  implementation: (
-    packageName: string,
-  ) => ImporterResult | Promise<ImporterResult>,
-) {
+function createImporter(implementation: (packageName: string) => ImporterResult | Promise<ImporterResult>) {
   const calls: string[] = [];
   const importer: Importer = async (packageName) => {
     calls.push(packageName);
@@ -205,10 +198,7 @@ describe("AutoLoader provider compatibility", () => {
       getHandler: () => handler,
     };
 
-    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set(
-      "test",
-      provider,
-    );
+    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set("test", provider);
 
     const ctx = makeCtx({
       providerKey: "test",
@@ -227,10 +217,7 @@ describe("AutoLoader provider compatibility", () => {
       getHandler: () => null, // cannot handle
     };
 
-    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set(
-      "test",
-      provider,
-    );
+    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set("test", provider);
 
     const ctx = makeCtx({
       providerKey: "test",
@@ -251,10 +238,7 @@ describe("AutoLoader provider compatibility", () => {
     };
 
     // First call: manually put in cache
-    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set(
-      "cached",
-      provider,
-    );
+    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set("cached", provider);
 
     const ctx1 = makeCtx({
       providerKey: "cached",
@@ -286,10 +270,7 @@ describe("AutoLoader provider compatibility", () => {
       },
     };
 
-    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set(
-      "ctx-check",
-      provider,
-    );
+    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set("ctx-check", provider);
 
     const ctx = makeCtx({
       providerKey: "ctx-check",
@@ -313,15 +294,10 @@ describe("AutoLoader provider compatibility", () => {
       },
     };
     const loader = new AutoLoader();
-    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set(
-      "boom",
-      provider,
-    );
+    (loader as unknown as { loaded: Map<string, Provider> }).loaded.set("boom", provider);
 
-    await expect(
-      loader.resolve(
-        makeCtx({ providerKey: "boom", normProvider: "boom", model: "test" }),
-      ),
-    ).rejects.toThrow("boom");
+    await expect(loader.resolve(makeCtx({ providerKey: "boom", normProvider: "boom", model: "test" }))).rejects.toThrow(
+      "boom",
+    );
   });
 });

@@ -70,10 +70,7 @@ export class AdaPter {
   route(condition: RouteCondition, provider: Provider): this;
   /** Function route: custom logic, return provider or null (skip). */
   route(resolver: RouteResolver): this;
-  route(
-    conditionOrResolver: RouteCondition | RouteResolver,
-    provider?: Provider,
-  ): this {
+  route(conditionOrResolver: RouteCondition | RouteResolver, provider?: Provider): this {
     if (typeof conditionOrResolver === "function") {
       this.routeEntries.push({
         type: "resolver",
@@ -104,10 +101,7 @@ export class AdaPter {
   configure(config: Partial<AdapterConfig>): this;
   /** Set or merge API-level configuration. */
   configure(apiType: ApiType, config: Partial<AdapterConfig>): this;
-  configure(
-    configOrApiType: Partial<AdapterConfig> | ApiType,
-    config?: Partial<AdapterConfig>,
-  ): this {
+  configure(configOrApiType: Partial<AdapterConfig> | ApiType, config?: Partial<AdapterConfig>): this {
     if (typeof configOrApiType === "string") {
       // API-level config
       const existing = this.apiConfigs.get(configOrApiType) ?? {};
@@ -132,18 +126,12 @@ export class AdaPter {
    * 4. On success -> return response. On failure -> try next model.
    * 5. If all models fail -> throw the last error.
    */
-  private execute<TRes>(
-    apiType: ApiType,
-    params: Partial<AdapterConfig> & { stream: true },
-  ): AsyncIterable<TRes>;
+  private execute<TRes>(apiType: ApiType, params: Partial<AdapterConfig> & { stream: true }): AsyncIterable<TRes>;
   private execute<TRes>(
     apiType: ApiType,
     params: Partial<AdapterConfig> & { stream?: false | undefined },
   ): Promise<TRes>;
-  private execute<TRes>(
-    apiType: ApiType,
-    params: Partial<AdapterConfig>,
-  ): Promise<TRes> | AsyncIterable<TRes> {
+  private execute<TRes>(apiType: ApiType, params: Partial<AdapterConfig>): Promise<TRes> | AsyncIterable<TRes> {
     const { config, models } = this.resolveConfig(apiType, params);
     if (config.stream) {
       return this.executeAsStream<TRes>(apiType, config, models);
@@ -151,11 +139,7 @@ export class AdaPter {
     return this.executeAsPromise<TRes>(apiType, config, models);
   }
 
-  private async executeAsPromise<TRes>(
-    apiType: ApiType,
-    config: AdapterConfig,
-    models: string[],
-  ): Promise<TRes> {
+  private async executeAsPromise<TRes>(apiType: ApiType, config: AdapterConfig, models: string[]): Promise<TRes> {
     const ctx = await this.runWithFallback(apiType, config, models);
     return ctx.response.data as TRes;
   }
@@ -184,12 +168,7 @@ export class AdaPter {
     config: AdapterConfig;
     models: string[];
   } {
-    const config = deepMerge(
-      defaults,
-      this.globalConfig,
-      this.apiConfigs.get(apiType) ?? {},
-      params,
-    );
+    const config = deepMerge(defaults, this.globalConfig, this.apiConfigs.get(apiType) ?? {}, params);
 
     const modelConfig = config.model;
     if (!modelConfig) throw new Error("No model specified.");
@@ -206,11 +185,7 @@ export class AdaPter {
    * - Non-streaming success: ctx.response.data must be set by request middleware / handler.
    * - Streaming success: ctx.response.data should be set to an AsyncIterable; if not, the stream yields nothing.
    */
-  private async runWithFallback(
-    apiType: ApiType,
-    config: AdapterConfig,
-    models: string[],
-  ): Promise<AdapterContext> {
+  private async runWithFallback(apiType: ApiType, config: AdapterConfig, models: string[]): Promise<AdapterContext> {
     const pipeline = this.buildPipeline();
     let lastError: Error | undefined;
 
@@ -240,11 +215,7 @@ export class AdaPter {
    * 3. Calls handler.getRequestConfig() and merges the result into ctx.request,
    *    so that middleware can inspect/modify the request config before it is sent.
    */
-  private async createContext(
-    apiType: ApiType,
-    config: AdapterConfig,
-    model: string,
-  ): Promise<AdapterContext> {
+  private async createContext(apiType: ApiType, config: AdapterConfig, model: string): Promise<AdapterContext> {
     const parsed = parseModelId(model);
 
     const ctx: AdapterContext = {
@@ -271,11 +242,7 @@ export class AdaPter {
     }
 
     const composedSignal =
-      signals.length === 0
-        ? undefined
-        : signals.length === 1
-          ? signals[0]
-          : AbortSignal.any(signals);
+      signals.length === 0 ? undefined : signals.length === 1 ? signals[0] : AbortSignal.any(signals);
     ctx.signal = composedSignal;
 
     // Route resolution — fills ctx.provider and ctx.handler
@@ -318,19 +285,12 @@ export class AdaPter {
 
   // ── Public API methods ───────────────────────────────────────────────────
 
-  completion(
-    params: CompletionRequest & { stream: true },
-  ): AsyncIterable<CompletionChunk>;
-  completion(
-    params: CompletionRequest & { stream?: false | undefined },
-  ): Promise<CompletionResponse>;
-  completion(
-    params: CompletionRequest,
-  ): Promise<CompletionResponse> | AsyncIterable<CompletionChunk> {
-    return this.execute<CompletionResponse | CompletionChunk>(
-      "completion",
-      params as never,
-    ) as Promise<CompletionResponse> | AsyncIterable<CompletionChunk>;
+  completion(params: CompletionRequest & { stream: true }): AsyncIterable<CompletionChunk>;
+  completion(params: CompletionRequest & { stream?: false | undefined }): Promise<CompletionResponse>;
+  completion(params: CompletionRequest): Promise<CompletionResponse> | AsyncIterable<CompletionChunk> {
+    return this.execute<CompletionResponse | CompletionChunk>("completion", params as never) as
+      | Promise<CompletionResponse>
+      | AsyncIterable<CompletionChunk>;
   }
 
   embedding(params: EmbeddingRequest): Promise<EmbeddingResponse> {
@@ -339,57 +299,32 @@ export class AdaPter {
       stream: false,
     });
   }
-  imageGeneration(
-    params: ImageGenerationRequest & { stream: true },
-  ): AsyncIterable<ImageGenerationStreamChunk>;
-  imageGeneration(
-    params: ImageGenerationRequest & { stream?: false | undefined },
-  ): Promise<ImageGenerationResponse>;
+  imageGeneration(params: ImageGenerationRequest & { stream: true }): AsyncIterable<ImageGenerationStreamChunk>;
+  imageGeneration(params: ImageGenerationRequest & { stream?: false | undefined }): Promise<ImageGenerationResponse>;
   imageGeneration(
     params: ImageGenerationRequest,
-  ):
-    | Promise<ImageGenerationResponse>
-    | AsyncIterable<ImageGenerationStreamChunk> {
-    return this.execute<ImageGenerationResponse | ImageGenerationStreamChunk>(
-      "image.generation",
-      params as never,
-    ) as
+  ): Promise<ImageGenerationResponse> | AsyncIterable<ImageGenerationStreamChunk> {
+    return this.execute<ImageGenerationResponse | ImageGenerationStreamChunk>("image.generation", params as never) as
       | Promise<ImageGenerationResponse>
       | AsyncIterable<ImageGenerationStreamChunk>;
   }
 
-  transcription(
-    params: TranscriptionRequest & { stream: true },
-  ): AsyncIterable<TranscriptionStreamChunk>;
-  transcription(
-    params: TranscriptionRequest & { stream?: false | null | undefined },
-  ): Promise<TranscriptionResponse>;
+  transcription(params: TranscriptionRequest & { stream: true }): AsyncIterable<TranscriptionStreamChunk>;
+  transcription(params: TranscriptionRequest & { stream?: false | null | undefined }): Promise<TranscriptionResponse>;
   transcription(
     params: TranscriptionRequest,
   ): Promise<TranscriptionResponse> | AsyncIterable<TranscriptionStreamChunk> {
-    return this.execute<TranscriptionResponse | TranscriptionStreamChunk>(
-      "transcription",
-      params as never,
-    ) as
+    return this.execute<TranscriptionResponse | TranscriptionStreamChunk>("transcription", params as never) as
       | Promise<TranscriptionResponse>
       | AsyncIterable<TranscriptionStreamChunk>;
   }
 
-  createResponse(
-    params: ResponseCreateRequest & { stream: true },
-  ): AsyncIterable<ResponseCreateStreamChunk>;
-  createResponse(
-    params: ResponseCreateRequest & { stream?: false | undefined },
-  ): Promise<ResponseCreateResponse>;
+  createResponse(params: ResponseCreateRequest & { stream: true }): AsyncIterable<ResponseCreateStreamChunk>;
+  createResponse(params: ResponseCreateRequest & { stream?: false | undefined }): Promise<ResponseCreateResponse>;
   createResponse(
     params: ResponseCreateRequest,
-  ):
-    | Promise<ResponseCreateResponse>
-    | AsyncIterable<ResponseCreateStreamChunk> {
-    return this.execute<ResponseCreateResponse | ResponseCreateStreamChunk>(
-      "response.create",
-      params as never,
-    ) as
+  ): Promise<ResponseCreateResponse> | AsyncIterable<ResponseCreateStreamChunk> {
+    return this.execute<ResponseCreateResponse | ResponseCreateStreamChunk>("response.create", params as never) as
       | Promise<ResponseCreateResponse>
       | AsyncIterable<ResponseCreateStreamChunk>;
   }
@@ -408,52 +343,32 @@ export class AdaPter {
     ) as unknown as Promise<ResponseDeleteResult>;
   }
 
-  compactResponse(
-    params: ResponseCompactRequest,
-  ): Promise<ResponseCompactResult> {
+  compactResponse(params: ResponseCompactRequest): Promise<ResponseCompactResult> {
     return this.execute<ResponseCompactResult>(
       "response.compact",
       params as never,
     ) as unknown as Promise<ResponseCompactResult>;
   }
 
-  retrieveResponse(
-    params: ResponseRetrieveRequest & { stream: true },
-  ): AsyncIterable<ResponseRetrieveStreamChunk>;
-  retrieveResponse(
-    params: ResponseRetrieveRequest & { stream?: false | undefined },
-  ): Promise<ResponseRetrieveResponse>;
+  retrieveResponse(params: ResponseRetrieveRequest & { stream: true }): AsyncIterable<ResponseRetrieveStreamChunk>;
+  retrieveResponse(params: ResponseRetrieveRequest & { stream?: false | undefined }): Promise<ResponseRetrieveResponse>;
   retrieveResponse(
     params: ResponseRetrieveRequest,
-  ):
-    | Promise<ResponseRetrieveResponse>
-    | AsyncIterable<ResponseRetrieveStreamChunk> {
-    return this.execute<ResponseRetrieveResponse | ResponseRetrieveStreamChunk>(
-      "response.retrieve",
-      params as never,
-    ) as
+  ): Promise<ResponseRetrieveResponse> | AsyncIterable<ResponseRetrieveStreamChunk> {
+    return this.execute<ResponseRetrieveResponse | ResponseRetrieveStreamChunk>("response.retrieve", params as never) as
       | Promise<ResponseRetrieveResponse>
       | AsyncIterable<ResponseRetrieveStreamChunk>;
   }
 
-  speech(
-    params: SpeechRequest & { stream: true },
-  ): AsyncIterable<SpeechStreamChunk>;
-  speech(
-    params: SpeechRequest & { stream?: false | undefined },
-  ): Promise<SpeechResponse>;
-  speech(
-    params: SpeechRequest,
-  ): Promise<SpeechResponse> | AsyncIterable<SpeechStreamChunk> {
-    return this.execute<SpeechResponse | SpeechStreamChunk>(
-      "speech",
-      params as never,
-    ) as Promise<SpeechResponse> | AsyncIterable<SpeechStreamChunk>;
+  speech(params: SpeechRequest & { stream: true }): AsyncIterable<SpeechStreamChunk>;
+  speech(params: SpeechRequest & { stream?: false | undefined }): Promise<SpeechResponse>;
+  speech(params: SpeechRequest): Promise<SpeechResponse> | AsyncIterable<SpeechStreamChunk> {
+    return this.execute<SpeechResponse | SpeechStreamChunk>("speech", params as never) as
+      | Promise<SpeechResponse>
+      | AsyncIterable<SpeechStreamChunk>;
   }
 
-  listResponseInputItems(
-    params: ResponseInputItemsListRequest,
-  ): Promise<ResponseInputItemsListResponse> {
+  listResponseInputItems(params: ResponseInputItemsListRequest): Promise<ResponseInputItemsListResponse> {
     return this.execute<ResponseInputItemsListResponse>(
       "response.input_items.list",
       params as never,

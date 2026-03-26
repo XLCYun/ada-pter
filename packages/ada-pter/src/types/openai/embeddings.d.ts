@@ -1,10 +1,6 @@
 export type EmbeddingModel = string;
 
-export type CreateEmbeddingInput =
-  | string
-  | Array<string>
-  | Array<number>
-  | Array<Array<number>>;
+export type CreateEmbeddingInput = string | Array<string> | Array<number> | Array<Array<number>>;
 
 export type EmbeddingCreateParamsInput = CreateEmbeddingInput;
 

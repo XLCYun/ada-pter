@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  jsonTransformer,
-  sseTransformer,
-} from "../../../ada-pter/src/transformers";
+import { jsonTransformer, sseTransformer } from "../../../ada-pter/src/transformers";
 import { autoProvider } from "../src/completion";
 
 describe("@ada-pter/openai responses", () => {
@@ -134,13 +131,9 @@ describe("@ada-pter/openai responses", () => {
         response_id: "resp_1",
       },
     } as any;
-    const cancelReq = autoProvider
-      .getHandler(cancelCtx)!
-      .getRequestConfig(cancelCtx);
+    const cancelReq = autoProvider.getHandler(cancelCtx)!.getRequestConfig(cancelCtx);
     expect(cancelReq.method).toBe("POST");
-    expect(cancelReq.url).toBe(
-      "https://example.com/v1/responses/resp_1/cancel",
-    );
+    expect(cancelReq.url).toBe("https://example.com/v1/responses/resp_1/cancel");
 
     const deleteCtx = {
       ...baseCtx,
@@ -151,9 +144,7 @@ describe("@ada-pter/openai responses", () => {
         response_id: "resp_2",
       },
     } as any;
-    const deleteReq = autoProvider
-      .getHandler(deleteCtx)!
-      .getRequestConfig(deleteCtx);
+    const deleteReq = autoProvider.getHandler(deleteCtx)!.getRequestConfig(deleteCtx);
     expect(deleteReq.method).toBe("DELETE");
     expect(deleteReq.url).toBe("https://example.com/v1/responses/resp_2");
 
@@ -167,9 +158,7 @@ describe("@ada-pter/openai responses", () => {
         reason: "cleanup",
       },
     } as any;
-    const compactReq = autoProvider
-      .getHandler(compactCtx)!
-      .getRequestConfig(compactCtx);
+    const compactReq = autoProvider.getHandler(compactCtx)!.getRequestConfig(compactCtx);
     expect(compactReq.method).toBe("POST");
     expect(compactReq.url).toBe("https://example.com/v1/responses/compact");
     expect(compactReq.body).toEqual(compactCtx.config);
@@ -189,9 +178,7 @@ describe("@ada-pter/openai responses", () => {
     } as any;
     const listReq = autoProvider.getHandler(listCtx)!.getRequestConfig(listCtx);
     expect(listReq.method).toBe("GET");
-    expect(listReq.url).toContain(
-      "https://example.com/v1/responses/resp_3/input_items?",
-    );
+    expect(listReq.url).toContain("https://example.com/v1/responses/resp_3/input_items?");
     expect(listReq.url).toContain("include=input_text");
     expect(listReq.url).toContain("order=asc");
     expect(listReq.url).toContain("after=item_0");
@@ -210,9 +197,7 @@ describe("@ada-pter/openai responses", () => {
         input: "hi",
       },
     } as any;
-    const createReq = autoProvider
-      .getHandler(createCtx)!
-      .getRequestConfig(createCtx);
+    const createReq = autoProvider.getHandler(createCtx)!.getRequestConfig(createCtx);
     expect(createReq.url).toBe("https://example.com/v1/custom/responses");
 
     const retrieveCtx = {
@@ -225,9 +210,7 @@ describe("@ada-pter/openai responses", () => {
         response_id: "resp_9",
       },
     } as any;
-    const retrieveReq = autoProvider
-      .getHandler(retrieveCtx)!
-      .getRequestConfig(retrieveCtx);
+    const retrieveReq = autoProvider.getHandler(retrieveCtx)!.getRequestConfig(retrieveCtx);
     expect(retrieveReq.url).toBe("https://example.com/v1/custom/retrieve");
   });
 });

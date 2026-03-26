@@ -1,14 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import {
-  resolveApiBase,
-  resolveApiKey,
-  resolveApiPath,
-} from "../../src/helpers/resolver";
+import { resolveApiBase, resolveApiKey, resolveApiPath } from "../../src/helpers/resolver";
 import type { AdapterContext } from "../../src/types";
 
-const createMockCtx = (
-  config: Partial<AdapterContext["config"]> = {},
-): AdapterContext =>
+const createMockCtx = (config: Partial<AdapterContext["config"]> = {}): AdapterContext =>
   ({
     config,
     apiType: "completion",
@@ -91,17 +85,13 @@ describe("resolveApiBase", () => {
 
   test("falls back to default when ctx and env are undefined", () => {
     const ctx = createMockCtx();
-    expect(resolveApiBase(ctx, { default: "https://default.api" })).toBe(
-      "https://default.api",
-    );
+    expect(resolveApiBase(ctx, { default: "https://default.api" })).toBe("https://default.api");
   });
 
   test("ctx.config.apiBase takes priority over env and default", () => {
     process.env[ENV_KEY] = "https://env.api";
     const ctx = createMockCtx({ apiBase: "https://ctx.api" });
-    expect(
-      resolveApiBase(ctx, { envName: ENV_KEY, default: "https://default.api" }),
-    ).toBe("https://ctx.api");
+    expect(resolveApiBase(ctx, { envName: ENV_KEY, default: "https://default.api" })).toBe("https://ctx.api");
   });
 
   test("returns undefined when no source provides a value", () => {
@@ -123,9 +113,7 @@ describe("resolveApiPath", () => {
 
   test("falls back to default when ctx.config.apiPath is undefined", () => {
     const ctx = createMockCtx();
-    expect(resolveApiPath(ctx, { default: "/default/path" })).toBe(
-      "/default/path",
-    );
+    expect(resolveApiPath(ctx, { default: "/default/path" })).toBe("/default/path");
   });
 
   test("ctx.config.apiPath takes priority over default", () => {

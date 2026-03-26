@@ -11,15 +11,11 @@ import type { Provider } from "./types/provider";
 export function defineProvider(config: Provider): Provider {
   // ── Validate required fields ──
   if (!config.name || typeof config.name !== "string") {
-    throw new Error(
-      'defineProvider: "name" is required and must be a non-empty string.',
-    );
+    throw new Error('defineProvider: "name" is required and must be a non-empty string.');
   }
 
   if (typeof config.getHandler !== "function") {
-    throw new Error(
-      'defineProvider: "getHandler" is required and must be a function.',
-    );
+    throw new Error('defineProvider: "getHandler" is required and must be a function.');
   }
 
   // ── Freeze and return ──

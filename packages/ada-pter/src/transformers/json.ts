@@ -4,9 +4,7 @@ import { getResponseContentType, isJsonContentType } from "./utils";
 // biome-ignore lint/complexity/noBannedTypes: no options for now
 export type JsonTransformerOptions = {};
 
-export function createJsonTransformer(
-  _options: JsonTransformerOptions = {},
-): ResponseTransformer {
+export function createJsonTransformer(_options: JsonTransformerOptions = {}): ResponseTransformer {
   return async (ctx) => {
     const raw = ctx.response.raw;
     if (!raw) return;

@@ -1,14 +1,8 @@
 // Standalone type definitions for images.generate
 
 export interface ImagesGenerateAPI {
-  generate(
-    body: ImageGenerateParamsNonStreaming,
-    options?: RequestOptions,
-  ): APIPromise<ImagesResponse>;
-  generate(
-    body: ImageGenerateParamsStreaming,
-    options?: RequestOptions,
-  ): APIPromise<Stream<ImageGenStreamEvent>>;
+  generate(body: ImageGenerateParamsNonStreaming, options?: RequestOptions): APIPromise<ImagesResponse>;
+  generate(body: ImageGenerateParamsStreaming, options?: RequestOptions): APIPromise<Stream<ImageGenStreamEvent>>;
   generate(
     body: ImageGenerateParamsBase,
     options?: RequestOptions,
@@ -69,9 +63,7 @@ export interface ImageGenPartialImageEvent {
   type: "image_generation.partial_image";
 }
 
-export type ImageGenStreamEvent =
-  | ImageGenPartialImageEvent
-  | ImageGenCompletedEvent;
+export type ImageGenStreamEvent = ImageGenPartialImageEvent | ImageGenCompletedEvent;
 
 export type ImageModel = string;
 
@@ -103,9 +95,7 @@ export interface ImagesResponseOutputTokensDetails {
   text_tokens: number;
 }
 
-export type ImageGenerateParams =
-  | ImageGenerateParamsNonStreaming
-  | ImageGenerateParamsStreaming;
+export type ImageGenerateParams = ImageGenerateParamsNonStreaming | ImageGenerateParamsStreaming;
 
 export interface ImageGenerateParamsBase {
   prompt: string;
@@ -116,15 +106,7 @@ export interface ImageGenerateParamsBase {
   output_compression?: number | null;
   output_format?: "png" | "jpeg" | "webp" | (string & {}) | null;
   partial_images?: number | null;
-  quality?:
-    | "standard"
-    | "hd"
-    | "low"
-    | "medium"
-    | "high"
-    | "auto"
-    | (string & {})
-    | null;
+  quality?: "standard" | "hd" | "low" | "medium" | "high" | "auto" | (string & {}) | null;
   response_format?: "url" | "b64_json" | (string & {}) | null;
   size?:
     | "auto"
@@ -142,8 +124,7 @@ export interface ImageGenerateParamsBase {
   user?: string;
 }
 
-export interface ImageGenerateParamsNonStreaming
-  extends ImageGenerateParamsBase {
+export interface ImageGenerateParamsNonStreaming extends ImageGenerateParamsBase {
   stream?: false | null;
 }
 
