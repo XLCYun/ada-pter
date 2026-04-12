@@ -7,13 +7,19 @@ import type {
 } from "ada-pter/types/openai";
 import { mapFinishReason, mapUsage, type ProviderSpecificFields } from "./response-shared";
 import type {
+  BashCodeExecutionToolResultBlock,
+  CodeExecutionToolResultBlock,
   RawContentBlockDeltaEvent,
   RawContentBlockStartEvent,
   RawErrorEvent,
   RawMessageDeltaEvent,
   RawMessageStartEvent,
   RawMessageStreamEvent,
+  TextEditorCodeExecutionToolResultBlock,
+  ToolSearchToolResultBlock,
   Usage,
+  WebFetchToolResultBlock,
+  WebSearchToolResultBlock,
 } from "./types/messages";
 
 // The overall type structure expanded for RawMessageStreamEvent
@@ -32,8 +38,13 @@ type StreamState = {
   toolIndex: number;
   currentContentBlockType: string | null;
   currentToolCallArgsLength: number;
-  webSearchResults: unknown[];
-  toolResults: unknown[];
+  webSearchResults: (WebSearchToolResultBlock | WebFetchToolResultBlock)[];
+  toolResults: (
+    | CodeExecutionToolResultBlock
+    | BashCodeExecutionToolResultBlock
+    | TextEditorCodeExecutionToolResultBlock
+    | ToolSearchToolResultBlock
+  )[];
   reasoningContent: string;
 };
 
@@ -125,7 +136,7 @@ const handleContentBlockStart = (event: RawContentBlockStartEvent, state: Stream
     };
   }
 
-  if (!block.type.endsWith("_tool_result")) {
+  if (block.type.endsWith("_tool_result")) {
     // skip tool_search_tool_result as it's internal metadata
     if (block.type === "tool_search_tool_result") return null;
     if (block.type === "web_search_tool_result" || block.type === "web_fetch_tool_result") {
@@ -133,7 +144,9 @@ const handleContentBlockStart = (event: RawContentBlockStartEvent, state: Stream
       return { provider_specific_fields: { web_search_results: state.webSearchResults } };
     }
 
-    state.toolResults.push(block);
+    state.toolResults.push(
+      block as CodeExecutionToolResultBlock | BashCodeExecutionToolResultBlock | TextEditorCodeExecutionToolResultBlock,
+    );
     return { provider_specific_fields: { tool_results: state.toolResults } };
   }
 
@@ -181,9 +194,9 @@ const handleContentBlockDelta = (event: RawContentBlockDeltaEvent, state: Stream
 };
 
 const handleContentBlockStop = (state: StreamState): StreamChoiceDelta | null => {
+  const blockType = state.currentContentBlockType;
   state.currentContentBlockType = null;
-  const isToolBlock =
-    state.currentContentBlockType === "tool_use" || state.currentContentBlockType === "server_tool_use";
+  const isToolBlock = blockType === "tool_use" || blockType === "server_tool_use";
   if (!isToolBlock) return null;
   if (state.currentToolCallArgsLength > 0) return null;
   return { tool_calls: [makeToolCallDelta(state.toolIndex, "{}")] };
@@ -199,10 +212,7 @@ const handleMessageStart = (event: RawMessageStartEvent, state: StreamState): Ch
 const handleMessageDelta = (event: RawMessageDeltaEvent, state: StreamState): ChatCompletionChunk | null => {
   const finishReason = mapFinishReason(event.delta.stop_reason);
   const usage = mapUsage(asAnthropicUsageFromMessageDelta(event.usage), state.reasoningContent || null);
-  const provider_specific_fields: ProviderSpecificFields | undefined =
-    event.delta.container != null ? { container_uploads: event.delta.container as unknown } : undefined;
-  const delta: StreamChoiceDelta = provider_specific_fields ? { provider_specific_fields } : {};
-  return makeChunk(state, delta, finishReason, usage);
+  return makeChunk(state, {}, finishReason, usage);
 };
 
 const handleStreamError = (event: RawErrorEvent): never => {

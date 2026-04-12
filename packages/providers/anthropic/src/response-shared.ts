@@ -69,7 +69,6 @@ function mapServerToolUse(raw: AnthropicUsage["server_tool_use"]): ServerToolUse
 
 /**
  * Maps Anthropic stop_reason to OpenAI finish_reason.
- * Anthropic-specific values (pause_turn, refusal) are mapped; see inline comments.
  */
 export function mapFinishReason(stopReason: StopReason | null): FinishReason {
   if (stopReason == null) return "stop";
@@ -81,12 +80,9 @@ export function mapFinishReason(stopReason: StopReason | null): FinishReason {
       return "length";
     case "tool_use":
       return "tool_calls";
-    // Anthropic-specific: model paused for tool use or continuation; no OpenAI equivalent → map to stop.
-    case "pause_turn":
-      return "stop";
-    // Anthropic-specific: model refused to answer; semantically closest to content_filter.
     case "refusal":
       return "content_filter";
+    // pause_turn, end_turn => stop
     default:
       return "stop";
   }
@@ -94,7 +90,7 @@ export function mapFinishReason(stopReason: StopReason | null): FinishReason {
 
 /**
  * Maps Anthropic Usage to OpenAI CompletionUsage.
- * - Uses js-tiktoken for reasoning_tokens; always fills completion_tokens_details (reasoning_tokens + text_tokens).
+ * - Uses js-tiktoken for reasoning_tokens when reasoning content is present.
  * - Includes server_tool_use from API (web_search_requests, tool_search_requests when present), cache tokens, and cache_creation_token_details.
  */
 export function mapUsage(usage: AnthropicUsage, reasoningContent: string | null): CompletionUsage {
@@ -108,15 +104,10 @@ export function mapUsage(usage: AnthropicUsage, reasoningContent: string | null)
 
   const reasoningTokens =
     reasoningContent != null && reasoningContent.length > 0 ? countReasoningTokens(reasoningContent) : 0;
-  const textTokens = completionTokens - reasoningTokens;
 
   const prompt_tokens_details: CompletionUsage["prompt_tokens_details"] = {
     cached_tokens: cacheRead,
-    cache_creation_tokens: cacheCreation,
   };
-  if (usage.cache_creation != null) {
-    prompt_tokens_details.cache_creation_token_details = usage.cache_creation;
-  }
 
   const result: CompletionUsage = {
     prompt_tokens: promptTokens,
@@ -124,7 +115,6 @@ export function mapUsage(usage: AnthropicUsage, reasoningContent: string | null)
     total_tokens: totalTokens,
     completion_tokens_details: {
       reasoning_tokens: reasoningTokens,
-      text_tokens: textTokens,
     },
     prompt_tokens_details,
     server_tool_use: mapServerToolUse(usage.server_tool_use),

@@ -1,9 +1,16 @@
 import type { ThinkingBlock } from "./extend";
 import type { ChatCompletionMessageFunctionCall, ChatCompletionMessageToolCall } from "./shared";
 
-/** Usage types */
-export interface CompletionUsageDetails {
-  [key: string]: unknown;
+export interface CompletionTokensDetails {
+  accepted_prediction_tokens?: number;
+  audio_tokens?: number;
+  reasoning_tokens?: number;
+  rejected_prediction_tokens?: number;
+}
+
+export interface PromptTokensDetails {
+  audio_tokens?: number;
+  cached_tokens?: number;
 }
 
 /** Server-side tool use counts (e.g. Anthropic web_search_requests, tool_search_requests). */
@@ -14,10 +21,13 @@ export interface ServerToolUseUsage {
 
 export interface CompletionUsage {
   completion_tokens: number;
+  completion_tokens_details?: CompletionTokensDetails
+
   prompt_tokens: number;
+  prompt_tokens_details?: PromptTokensDetails;
+
   total_tokens: number;
-  completion_tokens_details?: CompletionUsageDetails;
-  prompt_tokens_details?: CompletionUsageDetails;
+  
   /** Server tool use counts; used by Anthropic and others. */
   server_tool_use?: ServerToolUseUsage;
 }
