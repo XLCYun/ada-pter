@@ -6,7 +6,9 @@ import type {
 } from "ada-pter/types/openai";
 import type {
   Base64ImageSource,
+  ContainerUploadBlockParam,
   ContentBlockParam,
+  DocumentBlockParam,
   ImageBlockParam,
   MessageParam,
   ServerToolUseBlockParam,
@@ -110,6 +112,119 @@ export const mapMessages = (messages: ChatCompletionMessageParam[]): MessagePara
 const asString = (value: unknown): string => (value == null ? "" : String(value));
 type OpenAIImageUrlValue = ChatCompletionContentPartImage["image_url"];
 
+type FileContentPart = Extract<ChatCompletionContentPart, { type: "file" }>;
+
+const guessMimeFromFilename = (filename?: string): string | undefined => {
+  if (!filename) return undefined;
+  const ext = filename.split(".").pop()?.toLowerCase();
+  const map: Record<string, string> = {
+    pdf: "application/pdf",
+    txt: "text/plain",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    gif: "image/gif",
+    webp: "image/webp",
+  };
+  return map[ext ?? ""];
+};
+
+/**
+ * Map OpenAI `file` content part to Anthropic block.
+ *
+ * Priority:
+ * 1. `file_data` (base64 data URL) → `document` block with base64/text source
+ * 2. `file_id` with `format`:
+ *    - `application/pdf` / `text/plain` → `document` with `{ type: "file", file_id }`
+ *    - image MIME types → `image` with `{ type: "file", file_id }`
+ *    - other → `container_upload`
+ * 3. `file_id` without `format`:
+ *    - URL → `document` with `{ type: "url", url }`
+ *    - else → `container_upload`
+ */
+const mapFilePart = (part: FileContentPart): ContentBlockParam | null => {
+  const { file_data, file_id, filename } = part.file ?? {};
+
+  // 1. Priority: file_data (base64 data URL)
+  if (file_data) {
+    const match = /^data:([^;]+);base64,(.+)$/.exec(file_data);
+    if (!match) return null;
+    const [, mime, data] = match;
+
+    if (mime === "application/pdf") {
+      return mergeCacheControl(
+        {
+          type: "document",
+          source: { type: "base64", media_type: "application/pdf", data },
+        } satisfies DocumentBlockParam,
+        part,
+      );
+    }
+
+    if (mime === "text/plain") {
+      return mergeCacheControl(
+        {
+          type: "document",
+          source: { type: "text", media_type: "text/plain", data },
+        } satisfies DocumentBlockParam,
+        part,
+      );
+    }
+
+    if (mime.startsWith("image/")) {
+      return mergeCacheControl(
+        {
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: mime as Base64ImageSource["media_type"],
+            data,
+          },
+        } satisfies ImageBlockParam,
+        part,
+      );
+    }
+
+    return null;
+  }
+
+  // 2. file_id: infer MIME from filename, then determine block type
+  if (file_id) {
+    const mime = guessMimeFromFilename(filename);
+
+    if (mime === "application/pdf" || mime === "text/plain") {
+      return mergeCacheControl(
+        {
+          type: "document",
+          source: { type: "url", url: file_id },
+        } satisfies DocumentBlockParam,
+        part,
+      );
+    }
+
+    if (mime?.startsWith("image/")) {
+      return mergeCacheControl(
+        {
+          type: "image",
+          source: { type: "url", url: file_id },
+        } satisfies ImageBlockParam,
+        part,
+      );
+    }
+
+    return mergeCacheControl(
+      {
+        type: "container_upload",
+        file_id,
+      } satisfies ContainerUploadBlockParam,
+      part,
+    );
+  }
+
+  // 3. No file_data and no file_id
+  return null;
+};
+
 const mapImagePart = (imageUrl: OpenAIImageUrlValue): ImageBlockParam => {
   const url = imageUrl?.url ?? "";
   if (!url) throw new Error("image_url content missing url");
@@ -148,16 +263,7 @@ const mapContentPart = (part: ChatCompletionContentPart): ContentBlockParam | nu
       return part.image_url ? mergeCacheControl(mapImagePart(part.image_url), part) : null;
     }
     case "file": {
-      const fileObj = part.file;
-      const fileId = fileObj?.file_id ?? fileObj?.file_data;
-      if (!fileId) return null;
-      return mergeCacheControl(
-        {
-          type: "container_upload",
-          file_id: fileId,
-        } as ContentBlockParam,
-        part,
-      );
+      return mapFilePart(part);
     }
     // anthropic does not support input audio
     case "input_audio":

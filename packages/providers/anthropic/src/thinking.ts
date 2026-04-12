@@ -52,8 +52,9 @@ export class ThinkingManager {
 
   resolveThinking(): MessageCreateParamsBase["thinking"] | undefined {
     // if thinking is present, use it
-    const { thinking } = this.cfg;
-    if (thinking) return thinking;
+    // TODO: use passthrough instead of this
+    // const { thinking } = this.cfg;
+    // if (thinking) return thinking;
 
     const { reasoning_effort } = this.cfg;
     if (!reasoning_effort || reasoning_effort === "none") return undefined;
@@ -70,9 +71,11 @@ export class ThinkingManager {
     effortUsed: boolean;
   } {
     // if output_config is present, use it
-    const oc = this.cfg.output_config ?? {};
-    if (oc?.effort) return { output_config: oc, effortUsed: Boolean(oc?.effort) };
+    // TODO: use passthrough instead of this
+    // const oc = this.cfg.output_config ?? {};
+    // if (oc?.effort) return { output_config: oc, effortUsed: Boolean(oc?.effort) };
 
+    const oc: MessageCreateParamsBase["output_config"] = {};
     // only opus 4.5 and 4.6 support effort
     if (!this.isOpus45 && !this.isOpus46) return { output_config: oc, effortUsed: false };
 
