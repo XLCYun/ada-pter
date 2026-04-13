@@ -549,6 +549,61 @@ describe("anthropicStreamingTransformer — thinking", () => {
     expect(lastReasoningContent).toContain("Step 3.");
   });
 
+  test("signature_delta 生成 thinking_blocks delta（含 signature 字段）", async () => {
+    const events = [
+      {
+        type: "message_start",
+        message: {
+          id: "msg-sig",
+          model: "claude-3-5-sonnet-20241022",
+          usage: { input_tokens: 1, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, server_tool_use: null },
+        },
+      },
+      { type: "content_block_start", index: 0, content_block: { type: "thinking", thinking: "" } },
+      { type: "content_block_delta", index: 0, delta: { type: "thinking_delta", thinking: "Some thought." } },
+      { type: "content_block_delta", index: 0, delta: { type: "signature_delta", signature: "sig_abc123" } },
+      { type: "content_block_stop", index: 0 },
+      { type: "message_stop" },
+    ];
+    const chunks = await collectChunks(events);
+    const sigChunks = chunks.filter(
+      (c) => {
+        const tb = (c.choices[0].delta as { thinking_blocks?: Array<{ type: string; signature?: string }> }).thinking_blocks;
+        return tb?.some((b) => b.type === "thinking" && b.signature);
+      },
+    );
+    expect(sigChunks.length).toBeGreaterThan(0);
+    const sigBlock = (sigChunks[0].choices[0].delta as { thinking_blocks?: Array<{ signature?: string }> }).thinking_blocks![0];
+    expect(sigBlock.signature).toBe("sig_abc123");
+  });
+
+  test("signature_delta 时 reasoning_content 不增加（thinking 为空）", async () => {
+    const events = [
+      {
+        type: "message_start",
+        message: {
+          id: "msg-sig-reason",
+          model: "claude-3-5-sonnet-20241022",
+          usage: { input_tokens: 1, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, server_tool_use: null },
+        },
+      },
+      { type: "content_block_start", index: 0, content_block: { type: "thinking", thinking: "" } },
+      { type: "content_block_delta", index: 0, delta: { type: "signature_delta", signature: "sig_xyz" } },
+      { type: "content_block_stop", index: 0 },
+      { type: "message_stop" },
+    ];
+    const chunks = await collectChunks(events);
+    // signature_delta 不累积 reasoning_content，所以 reasoning_content 应为 null
+    const sigChunks = chunks.filter(
+      (c) => {
+        const tb = (c.choices[0].delta as { thinking_blocks?: Array<{ type: string; signature?: string }> }).thinking_blocks;
+        return tb?.some((b) => b.type === "thinking" && b.signature);
+      },
+    );
+    expect(sigChunks.length).toBeGreaterThan(0);
+    expect(sigChunks[0].choices[0].delta.reasoning_content).toBeNull();
+  });
+
   test("redacted_thinking block 生成 thinking_blocks delta（含 type=redacted_thinking）", async () => {
     const events = [
       {

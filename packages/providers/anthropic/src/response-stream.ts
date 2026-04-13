@@ -174,23 +174,17 @@ const handleContentBlockDelta = (event: RawContentBlockDeltaEvent, state: Stream
     return { provider_specific_fields: { citation: delta.citation } };
   }
 
-  if (delta.type === "thinking_delta" || delta.type === "signature_delta") {
-    const thinkingBlock: ThinkingBlock = {
-      type: "thinking",
-      thinking: delta.type === "thinking_delta" ? (delta.thinking ?? "") : "",
-      signature: delta.type === "signature_delta" ? (delta.signature ?? "") : "",
-    };
-    if (thinkingBlock.thinking.length > 0) {
-      state.reasoningContent += thinkingBlock.thinking;
-    }
-    return {
-      thinking_blocks: [thinkingBlock],
-      reasoning_content: state.reasoningContent || null,
-      provider_specific_fields: { thinking_blocks: [thinkingBlock] },
-    };
-  }
+  if (delta.type !== "thinking_delta" && delta.type !== "signature_delta") return null;
 
-  return null;
+  const thinking = delta.type === "thinking_delta" ? (delta.thinking ?? "") : "";
+  const signature = delta.type === "signature_delta" ? (delta.signature ?? "") : "";
+  if (thinking.length > 0) state.reasoningContent += thinking;
+  const thinkingBlock: ThinkingBlock = { type: "thinking", thinking, signature };
+  return {
+    thinking_blocks: [thinkingBlock],
+    reasoning_content: state.reasoningContent || null,
+    provider_specific_fields: { thinking_blocks: [thinkingBlock] },
+  };
 };
 
 const handleContentBlockStop = (state: StreamState): StreamChoiceDelta | null => {

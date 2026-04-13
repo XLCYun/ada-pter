@@ -433,10 +433,7 @@ function trimLastAssistantWhitespace(messages: MessageParam[]) {
 
   const last = messages[messages.length - 1];
   if (last.role !== "assistant") return;
-  if (typeof last.content === "string") {
-    last.content = last.content.trimEnd();
-    return;
-  }
+  // mapMessage always produces array content
 
   if (!Array.isArray(last.content)) return;
   last.content
