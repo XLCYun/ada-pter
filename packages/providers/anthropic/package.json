@@ -15,7 +15,9 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch"
+    "dev": "tsdown --watch",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage --coverage-reporter=lcov && genhtml coverage/lcov.info --output-directory coverage/html --title \"Anthropic Provider Coverage\""
   },
   "dependencies": {
     "ada-pter": "workspace:*",

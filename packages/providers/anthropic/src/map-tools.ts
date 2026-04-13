@@ -47,40 +47,24 @@ function filterInputSchema(raw: Record<string, unknown>): Tool["input_schema"] {
 function mapOneTool(tool: OpenAITool): AnthropicTool | undefined {
   if (!tool || typeof tool !== "object") return undefined;
 
+  /**
+   * OpenAI function tool:
+   * { type: "function", function: { name, description?, parameters? } }
+   */
   if (tool.type === "function") {
-    /**
-     * OpenAI function tool
-     * {
-     *   type: "function",
-     *   function: {
-     *     name: string;
-     *     description?: string;
-     *     parameters?: Record<string, unknown>;
-     *   }
-     * }
-     */
     const fn = tool.function;
     const raw = fn.parameters ?? { type: "object", properties: {} };
     return mergeToolProviderFields(
-      {
-        name: fn.name,
-        input_schema: filterInputSchema(raw),
-        description: fn.description,
-      },
+      { name: fn.name, input_schema: filterInputSchema(raw), description: fn.description },
       tool,
     );
-  } else if (tool.type === "custom") {
-    /**
-     * OpenAI custom tool
-     * {
-     *   type: "custom",
-     *   custom: {
-     *     name: string;
-     *     description?: string;
-     *     format?: { type: "text" } | { type: "grammar", grammar: { definition: string, syntax: "lark" | "regex" } };
-     *   }
-     * }
-     */
+  }
+
+  /**
+   * OpenAI custom tool:
+   * { type: "custom", custom: { name, description?, format? } }
+   */
+  if (tool.type === "custom")
     return mergeToolProviderFields(
       {
         name: tool.custom.name,
@@ -89,7 +73,6 @@ function mapOneTool(tool: OpenAITool): AnthropicTool | undefined {
       },
       tool,
     );
-  }
 
   // pass through other tool types unchanged
   return tool;
