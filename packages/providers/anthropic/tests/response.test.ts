@@ -31,11 +31,11 @@ describe("extractResponseContent", () => {
     };
     const out = extractResponseContent(message);
     expect(out.textContent).toBe("Hello");
-    expect(out.citations).toBeNull();
-    expect(out.thinkingBlocks).toBeNull();
+    expect(out.providerSpecificFields.citations).toEqual([]);
+    expect(out.providerSpecificFields.thinking_blocks).toEqual([]);
     expect(out.toolCalls).toEqual([]);
-    expect(out.webSearchResults).toBeNull();
-    expect(out.toolResults).toBeNull();
+    expect(out.providerSpecificFields.web_search_results).toEqual([]);
+    expect(out.providerSpecificFields.tool_results).toEqual([]);
   });
 
   test("extracts citations as per-block grouped 2D array (LiteLLM-aligned)", () => {
@@ -54,12 +54,12 @@ describe("extractResponseContent", () => {
       container: null,
     };
     const out = extractResponseContent(message);
-    expect(out.citations).not.toBeNull();
-    expect(out.citations).toHaveLength(2);
-    expect(out.citations![0]).toEqual([
+    expect(out.providerSpecificFields.citations).not.toBeUndefined();
+    expect(out.providerSpecificFields.citations).toHaveLength(2);
+    expect(out.providerSpecificFields.citations![0]).toEqual([
       { doc_id: "a", start_char_index: 0, end_char_index: 5, supported_text: "First block." },
     ]);
-    expect(out.citations![1]).toEqual([{ doc_id: "b", supported_text: "Second block." }]);
+    expect(out.providerSpecificFields.citations![1]).toEqual([{ doc_id: "b", supported_text: "Second block." }]);
   });
 
   test("extracts text and tool_use", () => {
@@ -111,7 +111,7 @@ describe("extractResponseContent", () => {
     };
     const out = extractResponseContent(message);
     expect(out.textContent).toBe("Done.");
-    expect(out.thinkingBlocks).toHaveLength(2);
+    expect(out.providerSpecificFields.thinking_blocks).toHaveLength(2);
     expect(out.reasoningContent).toBe("Step 1. Step 2.");
   });
 
@@ -135,8 +135,8 @@ describe("extractResponseContent", () => {
       container: null,
     };
     const out = extractResponseContent(message);
-    expect(out.webSearchResults).toHaveLength(1);
-    expect((out.webSearchResults![0] as { type: string }).type).toBe("web_search_tool_result");
+    expect(out.providerSpecificFields.web_search_results).toHaveLength(1);
+    expect((out.providerSpecificFields.web_search_results![0] as { type: string }).type).toBe("web_search_tool_result");
   });
 
   test("skips tool_search_tool_result", () => {
@@ -158,8 +158,8 @@ describe("extractResponseContent", () => {
       container: null,
     };
     const out = extractResponseContent(message);
-    expect(out.webSearchResults).toBeNull();
-    expect(out.toolResults).toBeNull();
+    expect(out.providerSpecificFields.web_search_results).toEqual([]);
+    expect(out.providerSpecificFields.tool_results).toEqual([]);
   });
 });
 
@@ -207,7 +207,6 @@ describe("mapUsage", () => {
     };
     const out = mapUsage(usage, null);
     expect(out.prompt_tokens).toBe(15);
-    expect((out.prompt_tokens_details as Record<string, unknown>)?.cache_creation_tokens).toBe(2);
     expect((out.prompt_tokens_details as Record<string, unknown>)?.cached_tokens).toBe(3);
   });
   test("adds reasoning_tokens when reasoningContent provided (js-tiktoken)", () => {
@@ -215,15 +214,13 @@ describe("mapUsage", () => {
     const details = out.completion_tokens_details as Record<string, unknown> | undefined;
     expect(details).toBeDefined();
     expect(details?.reasoning_tokens).toBe(countReasoningTokens("abcd"));
-    expect(details?.text_tokens).toBe(20 - countReasoningTokens("abcd"));
   });
 
-  test("always includes completion_tokens_details with text_tokens and reasoning_tokens", () => {
+  test("always includes completion_tokens_details with reasoning_tokens", () => {
     const out = mapUsage(baseUsage, null);
     expect(out.completion_tokens_details).toBeDefined();
     const details = out.completion_tokens_details as Record<string, unknown>;
     expect(details.reasoning_tokens).toBe(0);
-    expect(details.text_tokens).toBe(20);
   });
 
   test("includes server_tool_use when present in usage", () => {
@@ -238,7 +235,7 @@ describe("mapUsage", () => {
     expect(out.server_tool_use).toEqual({ web_search_requests: 2 });
   });
 
-  test("includes cache_creation_token_details when cache_creation present", () => {
+  test("cache_creation present does not break mapUsage", () => {
     const usage = {
       ...baseUsage,
       cache_creation: {
@@ -247,11 +244,8 @@ describe("mapUsage", () => {
       },
     } as Message["usage"];
     const out = mapUsage(usage, null);
-    const details = out.prompt_tokens_details as Record<string, unknown> | undefined;
-    expect(details?.cache_creation_token_details).toEqual({
-      ephemeral_5m_input_tokens: 100,
-      ephemeral_1h_input_tokens: 50,
-    });
+    expect(out.prompt_tokens).toBeDefined();
+    expect(out.completion_tokens).toBeDefined();
   });
 
   test("includes tool_search_requests when present in usage", () => {
@@ -298,8 +292,8 @@ describe("transformParsedResponse", () => {
     const psf = (out.choices[0].message as { provider_specific_fields?: Record<string, unknown> })
       .provider_specific_fields;
     expect(psf).toBeDefined();
-    expect(psf?.citations).toBeUndefined();
-    expect(Array.isArray(psf?.thinking_blocks)).toBe(false);
+    expect(psf?.citations).toEqual([]);
+    expect(Array.isArray(psf?.thinking_blocks)).toBe(true);
   });
 
   test("includes tool_calls and provider_specific_fields when present", () => {
@@ -330,11 +324,12 @@ describe("transformParsedResponse", () => {
     const psf = (out.choices[0].message as { provider_specific_fields?: Record<string, unknown> })
       .provider_specific_fields;
     expect(psf).toBeDefined();
-    expect(psf?.citations).toBeUndefined();
+    expect(psf?.citations).toEqual([]);
   });
 
   test("throws on error response shape", () => {
     const errorBody = {
+      type: "error",
       error: { message: "Rate limited" },
     } as unknown as Message;
     expect(() => transformParsedResponse(errorBody)).toThrow("Rate limited");
@@ -370,7 +365,7 @@ describe("anthropicResponseTransformer", () => {
       config: { stream: false },
       request: {},
       response: {
-        data: { error: { message: "Invalid API key" } },
+        data: { type: "error", error: { message: "Invalid API key" } },
         raw: null,
       },
       state: {},

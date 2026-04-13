@@ -22,7 +22,7 @@ reasoning_effort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | nu
 ```
 
 如何决定 thinking 参数：
-1. 如果透传了该参数，则直接使用
+1. 如果透传了该参数，则直接使用（TODO）
 2. 如果未传 reasoning_effort，或传了 "none" | null，则 thinking 不取值
 3. 如果是 opus 4.6，返回 { type: "adaptive" }
 4. 其余情况返回 { type: "enabed", budget_tokens }, budget_tokens 取值为：
@@ -33,7 +33,7 @@ reasoning_effort?: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | nu
    5. xhigh => 4096
 
 如何决定 output_config.effort：
-1. 如果透传了该参数，则直接使用
+1. 如果透传了该参数，则直接使用（TODO）
 2. 如果不是 opus 4.5, opus 4.6 则不设置 effort
 3. 如果 reasoning_effort = falsy | "none"，则不设置 effort
 4. 否则返回effort
@@ -90,17 +90,26 @@ Anthropic:
 1. OpenAI 只支持 `function`, `custom` 两种工具，这两种都可以直接映射为 Antropic 的 custom 工具
 2. Anthropic 的 custom 工具的 input_schema 只能传 type, properties, required 三个字段。OpenAI 则无此限制。
 
-1. 如果直接透传了 Anthropic 工具，则直接使用
+映射规则：
+1. 如果直接透传了 Anthropic 工具（包含 `input_schema` 字段），则直接使用
 2. type = `function`
    1. name = tool.function.name
    2. description = tool.function.description
    3. input_schema = { tool.function.parameters 保留 type, properties, required }
 3. type = `custom`
    1. name = tool.custom.name
-   2. description: tool.custom.description
+   2. description: tool.custom.description，若未提供则默认为空字符串 `""`
    3. input_schema: { type: "object", properties: {} }
 
-TODO: 实现透传
+Provider-specific 字段支持：
+- `cache_control` - Anthropic 的缓存控制字段，原样透传
+- `allowed_callers` - 调用者限制列表，支持值为 `"direct"` | `"code_execution_20250825"` | `"code_execution_20260120"`
+- `defer_loading` - 延迟加载标志
+- `input_examples` - 输入示例数组
+- `eager_input_streaming` - 是否启用紧急输入流
+- `strict` - 严格模式标志
+
+这些字段来自 OpenAI 的工具定义时，会直接透传到 Anthropic 工具定义中。
 
 ### Messages 映射
 
@@ -125,14 +134,17 @@ system 消息映射：
 2. 对于相邻的assistant消息，把它们打包为一个Anthropic的assistant消息
 3. 打包方法是将相邻的消息，映射为一个 content，组装成 anthropic 的 message.content 数组
 
-assistant 消息 => 多个 content block，由四部分组成：
+assistant 消息 => 多个 content block，由四部分组成（**按此顺序**）：
 1. thinking blocks
-   1. 如果 msg.thinking_blocks 存在，则放在开头，这是 anthropic 要求的
+   - 如果 `msg.thinking_blocks` 存在，则放在开头（**Anthropic API 强制要求**）
 2. content blocks
-   1. 如果 msg.content 是字符串 => { type: "text", text: content }
-   2. 如果 msg.content 是数组，则展开，OpenAI 只支持 text, refusal 两类 content type，两者都直接映射为 text 类型；如果是其它 Anthropic 的透传原生 content，则直接透传
-   3. 处理 msg.tool_calls，需要映射为 tool_use 或 server_tool_use 消息
-   4. 处理 msg.function_call，映射为 tool_use
+   - 如果 `msg.content` 是字符串 => `{ type: "text", text: content }`
+   - 如果 `msg.content` 是数组，则展开，OpenAI 只支持 `text`, `refusal` 两类
+   - 两者都直接映射为 `text` 类型；若是 Anthropic 原生 content，则直接透传
+3. tool_calls blocks
+   - 处理 `msg.tool_calls`，映射为 `tool_use` 或 `server_tool_use`
+4. function_call block
+   - 处理 `msg.function_call`（旧格式），映射为 `tool_use`
 
 TODO: 添加直接恢复 anthropic 原始 Assistannt 消息的功能
 
@@ -179,21 +191,16 @@ OpenAI 的 file content 结构如下：
 }
 ```
 
-可供选择的 Anthropic Content Block：
-```typescript
-{ type: "url": url: string }
-{ type: "base64", media_type: "application/pdf" }
-{ type: "text", media_type: "text/plain"}
-{ type: "content", content: string | (
-    | { type: "text", text: string }
-    | { 
-      type: "image"
-      source: { type: "base64", media_type: "image/jpeg" | "image/png" | "image/gif" | "image/webp" }
-      | { type: "url", url: string }
-    }
-  )[]
-}
-```
+映射规则（按优先级）：
+1. `file_data`（base64 data URL）→ document/image block
+   - `application/pdf` → `{ type: "document", source: { type: "base64", media_type: "application/pdf", data } }`
+   - `text/plain` → `{ type: "document", source: { type: "text", media_type: "text/plain", data } }`
+   - `image/*` → `{ type: "image", source: { type: "base64", media_type, data } }`
+2. `file_id` + 文件名推断 MIME 类型
+   - `application/pdf` / `text/plain` → `{ type: "document", source: { type: "url", url: file_id } }`
+   - `image/*` → `{ type: "image", source: { type: "url", url: file_id } }`
+   - 其他 → `{ type: "container_upload", file_id }`
+3. 无 file_data 无 file_id → 返回 null（跳过）
 
 ### 其它字段的映射
 

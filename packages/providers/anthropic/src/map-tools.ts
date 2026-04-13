@@ -12,7 +12,6 @@ export function mapTools(tools?: OpenAITools): AnthropicTools | undefined {
   return tools
     .map((tool) => {
       // Pass through Anthropic format tools unchanged
-      // TODO: implement passthrough
       if (tool && typeof tool === "object" && "input_schema" in tool) {
         return tool as unknown as Tool | ToolUnion;
       }
@@ -101,6 +100,8 @@ type ToolProviderFields = {
   allowed_callers?: Array<"direct" | "code_execution_20250825" | "code_execution_20260120">;
   defer_loading?: boolean;
   input_examples?: Array<{ [key: string]: unknown }>;
+  eager_input_streaming?: boolean | null;
+  strict?: boolean;
 };
 
 export const mergeToolProviderFields = <T extends object>(
@@ -109,9 +110,10 @@ export const mergeToolProviderFields = <T extends object>(
 ): T => {
   const extra: Partial<ToolProviderFields> = {};
   if (source?.cache_control != null) extra.cache_control = source.cache_control;
-  // TODO: implement passthrough
   if (source?.allowed_callers != null) extra.allowed_callers = source.allowed_callers;
   if (source?.defer_loading != null) extra.defer_loading = source.defer_loading;
   if (source?.input_examples != null) extra.input_examples = source.input_examples;
+  if (source?.eager_input_streaming != null) extra.eager_input_streaming = source.eager_input_streaming;
+  if (source?.strict != null) extra.strict = source.strict;
   return { ...target, ...extra };
 };

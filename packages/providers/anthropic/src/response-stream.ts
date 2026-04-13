@@ -260,6 +260,7 @@ export const anthropicStreamingTransformer: ResponseTransformer = async (ctx: Ad
         const delta = handleContentBlockStop(state);
         if (!delta) continue;
         yield makeChunk(state, delta);
+        continue;
       }
 
       if (event.type === "message_stop") continue;
