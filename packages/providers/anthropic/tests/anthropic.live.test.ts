@@ -17,7 +17,13 @@ const debugMiddleware: Middleware = async (ctx: AdapterContext, next: Next) => {
     const data = ctx.response.data;
     const isStream = data != null && typeof data === "object" && Symbol.asyncIterator in (data as object);
     if (isStream) {
-      console.log("[DEBUG] → RESPONSE: <AsyncIterable stream — chunks logged individually>");
+      const original = data as AsyncIterable<unknown>;
+      ctx.response.data = (async function* () {
+        for await (const chunk of original) {
+          console.log("[DEBUG] → CHUNK:", JSON.stringify(chunk));
+          yield chunk;
+        }
+      })();
     } else {
       console.log("[DEBUG] → RESPONSE:", JSON.stringify(data, null, 2));
     }
