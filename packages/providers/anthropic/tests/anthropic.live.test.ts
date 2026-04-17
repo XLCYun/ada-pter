@@ -1,20 +1,45 @@
 import { describe, expect, test } from "bun:test";
 import type { ChatCompletionMessageFunctionToolCall } from "ada-pter/types/openai";
-import { autoProvider, getProvider } from "@ada-pter/anthropic";
+import { autoProvider, getProvider } from "../src";
 import { createAdapter } from "ada-pter";
+import type { AdapterContext, Middleware, Next, Provider } from "ada-pter";
+
+const isDebug = Boolean(process.env.DEBUG);
+
+const debugMiddleware: Middleware = async (ctx: AdapterContext, next: Next) => {
+  if (isDebug) {
+    const body = ctx.request.body;
+    console.log("\n[DEBUG] ← REQUEST", ctx.request.url);
+    console.log("[DEBUG]   BODY:", JSON.stringify(typeof body === "string" ? JSON.parse(body) : body, null, 2));
+  }
+  await next();
+  if (isDebug) {
+    const data = ctx.response.data;
+    const isStream = data != null && typeof data === "object" && Symbol.asyncIterator in (data as object);
+    if (isStream) {
+      console.log("[DEBUG] → RESPONSE: <AsyncIterable stream — chunks logged individually>");
+    } else {
+      console.log("[DEBUG] → RESPONSE:", JSON.stringify(data, null, 2));
+    }
+  }
+};
+
+const createTestAdapter = (provider: Provider = autoProvider) =>
+  createAdapter().use(debugMiddleware).route({ provider: "anthropic" }, provider);
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
 const canRun = Boolean(apiKey);
 const live = canRun ? describe : describe.skip;
 
+const rawModel = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
+const model = rawModel.includes("/") ? rawModel : `anthropic/${rawModel}`;
+
 /** Narrow the union type to the function variant we use in assertions. */
 const asFnToolCall = (tc: { type: string }): tc is ChatCompletionMessageFunctionToolCall => tc.type === "function";
 
 live("live: @ada-pter/anthropic completion", () => {
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-
   test("non-stream completion works with real Anthropic API", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const res = await a.completion({
       model,
@@ -37,7 +62,7 @@ live("live: @ada-pter/anthropic completion", () => {
   });
 
   test("stream completion yields chunks with real Anthropic API", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const stream = a.completion({
       model,
@@ -64,7 +89,7 @@ live("live: @ada-pter/anthropic completion", () => {
   });
 
   test("completion with system message", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const res = await a.completion({
       model,
@@ -86,10 +111,8 @@ live("live: @ada-pter/anthropic completion", () => {
 });
 
 live("live: @ada-pter/anthropic multi-turn conversation", () => {
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-
   test("multi-turn non-stream conversation", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     // Turn 1
     const res1 = await a.completion({
@@ -117,7 +140,7 @@ live("live: @ada-pter/anthropic multi-turn conversation", () => {
   });
 
   test("multi-turn stream conversation", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     // Turn 1 — non-stream to capture assistant reply
     const res1 = await a.completion({
@@ -153,7 +176,7 @@ live("live: @ada-pter/anthropic multi-turn conversation", () => {
   });
 
   test("multi-turn conversation with system + developer messages", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const res = await a.completion({
       model,
@@ -171,7 +194,7 @@ live("live: @ada-pter/anthropic multi-turn conversation", () => {
   });
 
   test("multi-turn with 3+ exchanges", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const messages: Array<{ role: "user" | "assistant"; content: string | null }> = [];
 
@@ -215,11 +238,8 @@ live("live: @ada-pter/anthropic multi-turn conversation", () => {
 });
 
 live("live: @ada-pter/anthropic thinking/reasoning", () => {
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-
   test("non-stream completion with reasoning_effort (thinking)", async () => {
-    const provider = getProvider();
-    const a = createAdapter().route({ provider: "anthropic" }, provider);
+    const a = createTestAdapter(getProvider());
 
     const res = await a.completion({
       model,
@@ -251,8 +271,7 @@ live("live: @ada-pter/anthropic thinking/reasoning", () => {
   });
 
   test("stream completion with reasoning_effort (thinking)", async () => {
-    const provider = getProvider();
-    const a = createAdapter().route({ provider: "anthropic" }, provider);
+    const a = createTestAdapter(getProvider());
 
     const stream = a.completion({
       model,
@@ -298,8 +317,7 @@ live("live: @ada-pter/anthropic thinking/reasoning", () => {
   });
 
   test("non-stream with reasoning_effort medium", async () => {
-    const provider = getProvider();
-    const a = createAdapter().route({ provider: "anthropic" }, provider);
+    const a = createTestAdapter(getProvider());
 
     const res = await a.completion({
       model,
@@ -317,8 +335,6 @@ live("live: @ada-pter/anthropic thinking/reasoning", () => {
 });
 
 live("live: @ada-pter/anthropic tool use", () => {
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-
   const weatherTool = {
     type: "function" as const,
     function: {
@@ -343,7 +359,7 @@ live("live: @ada-pter/anthropic tool use", () => {
   };
 
   test("non-stream tool call request", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const res = await a.completion({
       model,
@@ -375,7 +391,7 @@ live("live: @ada-pter/anthropic tool use", () => {
   });
 
   test("stream tool call request", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const stream = a.completion({
       model,
@@ -422,7 +438,7 @@ live("live: @ada-pter/anthropic tool use", () => {
   });
 
   test("tool call roundtrip (call → result → final answer)", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     // Step 1: Get tool call from assistant
     const firstRes = await a.completion({
@@ -467,7 +483,7 @@ live("live: @ada-pter/anthropic tool use", () => {
   });
 
   test("tool_choice required forces tool call", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const res = await a.completion({
       model,
@@ -487,7 +503,7 @@ live("live: @ada-pter/anthropic tool use", () => {
   });
 
   test("tool_choice none suppresses tool call", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const res = await a.completion({
       model,
@@ -506,8 +522,6 @@ live("live: @ada-pter/anthropic tool use", () => {
 });
 
 live("live: @ada-pter/anthropic thinking + tool use", () => {
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-
   const calculatorTool = {
     type: "function" as const,
     function: {
@@ -527,8 +541,7 @@ live("live: @ada-pter/anthropic thinking + tool use", () => {
   };
 
   test("non-stream with thinking and tool call", async () => {
-    const provider = getProvider();
-    const a = createAdapter().route({ provider: "anthropic" }, provider);
+    const a = createTestAdapter(getProvider());
 
     const res = await a.completion({
       model,
@@ -559,8 +572,7 @@ live("live: @ada-pter/anthropic thinking + tool use", () => {
   });
 
   test("stream with thinking and tool call", async () => {
-    const provider = getProvider();
-    const a = createAdapter().route({ provider: "anthropic" }, provider);
+    const a = createTestAdapter(getProvider());
 
     const stream = a.completion({
       model,
@@ -606,8 +618,7 @@ live("live: @ada-pter/anthropic thinking + tool use", () => {
   });
 
   test("thinking + tool call roundtrip", async () => {
-    const provider = getProvider();
-    const a = createAdapter().route({ provider: "anthropic" }, provider);
+    const a = createTestAdapter(getProvider());
 
     // Step 1: Get tool call with thinking
     const firstRes = await a.completion({
@@ -659,8 +670,6 @@ live("live: @ada-pter/anthropic thinking + tool use", () => {
 });
 
 live("live: @ada-pter/anthropic multi-tool use", () => {
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-20250514";
-
   const tools = [
     {
       type: "function" as const,
@@ -693,7 +702,7 @@ live("live: @ada-pter/anthropic multi-tool use", () => {
   ];
 
   test("parallel tool calls in non-stream", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const res = await a.completion({
       model,
@@ -718,7 +727,7 @@ live("live: @ada-pter/anthropic multi-tool use", () => {
   });
 
   test("parallel tool calls in stream", async () => {
-    const a = createAdapter().route({ provider: "anthropic" }, autoProvider);
+    const a = createTestAdapter();
 
     const stream = a.completion({
       model,
