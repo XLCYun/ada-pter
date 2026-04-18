@@ -509,7 +509,7 @@ live("live: @ada-pter/anthropic tool use", () => {
   });
 
   //  使用 claude-sonnet-4-6 测试
-  test.only("tool_choice none suppresses tool call", async () => {
+  test("tool_choice none suppresses tool call", async () => {
     const a = createTestAdapter();
 
     const res = await a.completion({

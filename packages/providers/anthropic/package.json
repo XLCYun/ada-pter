@@ -24,7 +24,7 @@
     "test:coverage": "bun test --coverage --coverage-reporter=lcov && genhtml coverage/lcov.info --output-directory coverage/html --title \"Anthropic Provider Coverage\""
   },
   "dependencies": {
-    "ada-pter": "workspace:*",
+    "@ada-pter/core": "workspace:*",
     "js-tiktoken": "^1.0.21"
   }
 }

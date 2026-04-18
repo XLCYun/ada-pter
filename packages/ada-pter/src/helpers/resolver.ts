@@ -13,7 +13,11 @@ export interface ResolveApiPathOptions {
   default?: string;
 }
 
-const getEnv = (name: string): string | undefined => (typeof process !== "undefined" ? process.env[name] : undefined);
+const getEnv = (name: string): string | undefined => {
+  if (typeof process === "undefined") return undefined;
+  const val = process.env[name];
+  return val === "" ? undefined : val;
+};
 
 const resolveConfigValue = (ctx: AdapterContext, key: "apiKey" | "apiBase" | "apiPath"): string | undefined => {
   const val = ctx.config[key];
