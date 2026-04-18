@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  jsonTransformer,
-  sseTransformer,
-} from "../../../ada-pter/src/transformers";
+import { jsonTransformer, sseTransformer } from "../../../ada-pter/src/transformers";
 import { autoProvider } from "../src/completion";
 
 describe("@ada-pter/openai responses", () => {
@@ -225,9 +222,7 @@ describe("@ada-pter/openai responses", () => {
         response_id: "resp_9",
       },
     } as any;
-    const retrieveReq = autoProvider
-      .getHandler(retrieveCtx)!
-      .getRequestConfig(retrieveCtx);
+    const retrieveReq = autoProvider.getHandler(retrieveCtx)!.getRequestConfig(retrieveCtx);
     expect(retrieveReq.url).toBe("https://example.com/v1/custom/retrieve");
   });
 });

@@ -1,8 +1,4 @@
-import {
-  InvalidModelError,
-  NoProviderError,
-  UnsupportedApiError,
-} from "../errors";
+import { InvalidModelError, NoProviderError, UnsupportedApiError } from "../errors";
 import type { Provider } from "../types";
 import type { AdapterContext } from "../types/core";
 import type { MatchPattern, RouteCondition, RouteEntry } from "../types/route";
@@ -91,8 +87,7 @@ export function matchPattern(pattern: MatchPattern, value: string): boolean {
   const loValue = value.toLowerCase();
   if (typeof pattern === "string") return pattern.toLowerCase() === loValue;
   if (pattern instanceof RegExp) return pattern.test(loValue);
-  if (Array.isArray(pattern))
-    return pattern.some((p) => matchPattern(p, loValue));
+  if (Array.isArray(pattern)) return pattern.some((p) => matchPattern(p, loValue));
   if (typeof pattern === "function") return pattern(loValue);
   return false;
 }
@@ -106,15 +101,10 @@ export function matchPattern(pattern: MatchPattern, value: string): boolean {
  * - { model: pattern }   — matches against ctx.normModel (normalized model name)
  * - { provider: ... }    — matches against ctx.normProvider; skips if no prefix
  */
-export function matchCondition(
-  condition: RouteCondition,
-  ctx: AdapterContext,
-): boolean {
-  if ("modelId" in condition)
-    return matchPattern(condition.modelId, ctx.normModelId);
+export function matchCondition(condition: RouteCondition, ctx: AdapterContext): boolean {
+  if ("modelId" in condition) return matchPattern(condition.modelId, ctx.normModelId);
   if ("model" in condition) return matchPattern(condition.model, ctx.normModel);
-  if ("provider" in condition)
-    return matchPattern(condition.provider, ctx.normProvider);
+  if ("provider" in condition) return matchPattern(condition.provider, ctx.normProvider);
   return false;
 }
 
@@ -141,10 +131,7 @@ function setProviderAndHandler(ctx: AdapterContext, provider: Provider): void {
  * Throws NoProviderError if no route matches.
  * Throws UnsupportedApiError if provider is found but handler is not compatible.
  */
-export async function resolveFromRouteChain(
-  ctx: AdapterContext,
-  entries: RouteEntry[],
-): Promise<void> {
+export async function resolveFromRouteChain(ctx: AdapterContext, entries: RouteEntry[]): Promise<void> {
   for (const entry of entries) {
     if (entry.type === "condition") {
       if (!matchCondition(entry.condition, ctx)) continue;

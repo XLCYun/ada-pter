@@ -1,14 +1,6 @@
 /// <reference path="../bun-test.d.ts" />
 
-import {
-  afterAll,
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  mock,
-  test,
-} from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { RetryController } from "../../src/core/retry";
 import { ProviderError, TimeoutError } from "../../src/errors";
 import type { AdapterContext } from "../../src/types/core";
@@ -56,9 +48,7 @@ const originalFetch = globalThis.fetch;
 const originalMathRandom = Math.random;
 const originalDateNow = Date.now;
 
-const mockFetch = mock((..._args: Parameters<typeof fetch>) =>
-  Promise.resolve(new Response()),
-);
+const mockFetch = mock((..._args: Parameters<typeof fetch>) => Promise.resolve(new Response()));
 
 beforeEach(() => {
   globalThis.fetch = mockFetch as unknown as typeof fetch;
@@ -87,9 +77,10 @@ describe("RetryController", () => {
     const controller = new AbortController();
     controller.abort();
 
-    await expect(
-      retry["sleepWithSignal"](10, controller.signal as AbortSignal),
-    ).rejects.toHaveProperty("name", "AbortError");
+    await expect(retry["sleepWithSignal"](10, controller.signal as AbortSignal)).rejects.toHaveProperty(
+      "name",
+      "AbortError",
+    );
   });
 
   test("sleepWithSignal rejects when aborted during wait", async () => {
@@ -140,30 +131,22 @@ describe("RetryController", () => {
   });
 
   test("throws ProviderError for non-retryable HTTP status", async () => {
-    mockFetch.mockResolvedValueOnce(
-      new Response("bad request", { status: 400 }),
-    );
+    mockFetch.mockResolvedValueOnce(new Response("bad request", { status: 400 }));
 
     const ctx = makeCtx();
     const retry = new RetryController(ctx);
 
-    await expect(retry.run(ctx.request, async () => {})).rejects.toBeInstanceOf(
-      ProviderError,
-    );
+    await expect(retry.run(ctx.request, async () => {})).rejects.toBeInstanceOf(ProviderError);
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   test("does not retry HTTP 501 even though it is >= 500", async () => {
-    mockFetch.mockResolvedValueOnce(
-      new Response("not implemented", { status: 501 }),
-    );
+    mockFetch.mockResolvedValueOnce(new Response("not implemented", { status: 501 }));
 
     const ctx = makeCtx();
     const retry = new RetryController(ctx);
 
-    await expect(retry.run(ctx.request, async () => {})).rejects.toBeInstanceOf(
-      ProviderError,
-    );
+    await expect(retry.run(ctx.request, async () => {})).rejects.toBeInstanceOf(ProviderError);
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
@@ -211,9 +194,7 @@ describe("RetryController", () => {
 
   test("retries network errors until success", async () => {
     const netErr = new Error("network");
-    mockFetch
-      .mockRejectedValueOnce(netErr)
-      .mockResolvedValueOnce(new Response("ok", { status: 200 }));
+    mockFetch.mockRejectedValueOnce(netErr).mockResolvedValueOnce(new Response("ok", { status: 200 }));
 
     const onSuccess = mock(async () => {});
     const ctx = makeCtx({

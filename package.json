@@ -18,7 +18,7 @@
     "test:unit": "bun run test:unit:bun",
     "test:unit:bun": "bun test packages",
     "test:unit:node": "vitest run",
-    "test:live": "bun test --conditions=development tests/live",
+    "test:live": "bun test --env-file=.env --conditions=development tests/live",
     "test:all": "bun run test:unit && bun run test:live",
     "test:cov": "bun test packages --coverage",
     "test:cov:lcov": "bun test packages --coverage --coverage-reporter=lcov",

@@ -10,11 +10,7 @@ import { resolveRequestBase } from "./utils";
 
 const SPEECH_PATH = "/audio/speech";
 
-const buildBody = (
-  cfg: SpeechCreateParams,
-  model: string,
-  streamEnabled: boolean | undefined,
-): SpeechCreateParams => {
+const buildBody = (cfg: SpeechCreateParams, model: string, streamEnabled: boolean | undefined): SpeechCreateParams => {
   const stream_format = streamEnabled ? "sse" : "audio";
   return {
     input: cfg.input,

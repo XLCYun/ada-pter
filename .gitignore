@@ -143,3 +143,9 @@ vite.config.ts.timestamp-*
 bun.lockb
 
 local-tests/
+
+# Test coverage reports
+**/coverage/
+**/*.gcov.html
+**/lcov-report/
+packages/providers/*/ada-pter/

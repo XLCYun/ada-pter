@@ -57,7 +57,5 @@ const streamingImageGenerationHandler: ApiHandler = {
 
 export function getImagesHandler(ctx: AdapterContext): ApiHandler | null {
   if (ctx.apiType !== "image.generation") return null;
-  return ctx.config.stream
-    ? streamingImageGenerationHandler
-    : imageGenerationHandler;
+  return ctx.config.stream ? streamingImageGenerationHandler : imageGenerationHandler;
 }

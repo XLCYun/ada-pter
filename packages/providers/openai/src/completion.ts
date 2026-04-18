@@ -25,7 +25,7 @@ const COMPLETION_PATH = "/chat/completions";
 
 const buildBody = (ctx: AdapterContext) => {
   const cfg = ctx.config;
-  const body: ChatCompletionCreateParamsBase = {
+  const body: ChatCompletionParamsBase = {
     model: ctx.model,
     messages: cfg.messages ?? [],
     audio: cfg.audio,
@@ -104,9 +104,7 @@ export const getProvider = (_options?: OpenAIProviderOptions): Provider => {
     name: "openai",
     getHandler(ctx: AdapterContext) {
       if (ctx.apiType === "completion") {
-        return ctx.config.stream
-          ? streamingCompletionHandler
-          : completionHandler;
+        return ctx.config.stream ? streamingCompletionHandler : completionHandler;
       }
       if (ctx.apiType === "embedding") return embeddingHandler;
       const transcriptionHandler = getTranscriptionHandler(ctx);

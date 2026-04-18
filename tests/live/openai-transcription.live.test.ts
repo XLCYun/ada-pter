@@ -16,8 +16,7 @@ const loadFixtureAudio = async (): Promise<Blob> => {
 };
 
 live("live: @ada-pter/openai transcription", () => {
-  const model =
-    process.env.OPENAI_TRANSCRIPTION_MODEL ?? "gpt-4o-mini-transcribe";
+  const model = process.env.OPENAI_TRANSCRIPTION_MODEL ?? "gpt-4o-mini-transcribe";
 
   test("transcription non-stream works with real OpenAI API", async () => {
     const a = createAdapter().route({ provider: "openai" }, autoProvider);

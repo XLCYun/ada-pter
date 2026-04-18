@@ -2,17 +2,8 @@
 
 import { describe, expect, test } from "bun:test";
 import { autoLoader } from "../../src/core/auto-loader";
-import {
-  matchCondition,
-  matchPattern,
-  parseModelId,
-  resolveFromRouteChain,
-} from "../../src/core/router";
-import {
-  InvalidModelError,
-  NoProviderError,
-  UnsupportedApiError,
-} from "../../src/errors";
+import { matchCondition, matchPattern, parseModelId, resolveFromRouteChain } from "../../src/core/router";
+import { InvalidModelError, NoProviderError, UnsupportedApiError } from "../../src/errors";
 import type { AdapterContext } from "../../src/types/core";
 import type { ApiHandler, Provider } from "../../src/types/provider";
 import type { RouteEntry } from "../../src/types/route";
@@ -37,10 +28,7 @@ function makeHandler(name = "test"): ApiHandler {
   };
 }
 
-function makeProvider(
-  name: string,
-  opts: { handler?: ApiHandler | null } = {},
-): Provider {
+function makeProvider(name: string, opts: { handler?: ApiHandler | null } = {}): Provider {
   const handler = opts.handler === undefined ? makeHandler(name) : opts.handler;
   return {
     name,
@@ -49,8 +37,7 @@ function makeProvider(
 }
 
 function makeCtx(overrides: Partial<AdapterContext> = {}): AdapterContext {
-  const baseModelId =
-    overrides.modelId !== undefined ? overrides.modelId : "openai/gpt-4";
+  const baseModelId = overrides.modelId !== undefined ? overrides.modelId : "openai/gpt-4";
   const parsed = parseModelId(baseModelId);
   return {
     apiType: "completion",
@@ -125,23 +112,17 @@ describe("parseModelId", () => {
 
   test("throws error for model starting with /", () => {
     expect(() => parseModelId("/gpt-4")).toThrow(InvalidModelError);
-    expect(() => parseModelId("/gpt-4")).toThrow(
-      "provider component cannot be empty",
-    );
+    expect(() => parseModelId("/gpt-4")).toThrow("provider component cannot be empty");
   });
 
   test("throws error for model ending with /", () => {
     expect(() => parseModelId("openai/")).toThrow(InvalidModelError);
-    expect(() => parseModelId("openai/")).toThrow(
-      "model component cannot be empty",
-    );
+    expect(() => parseModelId("openai/")).toThrow("model component cannot be empty");
   });
 
   test("throws error for model with //", () => {
     expect(() => parseModelId("provider//model")).toThrow(InvalidModelError);
-    expect(() => parseModelId("provider//model")).toThrow(
-      "empty component found in model ID",
-    );
+    expect(() => parseModelId("provider//model")).toThrow("empty component found in model ID");
   });
 
   test("throws error for empty string", () => {
@@ -255,9 +236,7 @@ describe("matchCondition", () => {
     test("matches provider prefix from array", () => {
       const ctx = makeCtx({ modelId: "openai/gpt-4" });
       expect(matchCondition({ provider: ["openai", "azure"] }, ctx)).toBe(true);
-      expect(matchCondition({ provider: ["anthropic", "google"] }, ctx)).toBe(
-        false,
-      );
+      expect(matchCondition({ provider: ["anthropic", "google"] }, ctx)).toBe(false);
     });
   });
 
@@ -279,9 +258,7 @@ describe("matchCondition", () => {
 describe("resolveFromRouteChain", () => {
   test("condition route: matches and sets provider + handler", async () => {
     const prov = makeProvider("openai");
-    const entries: RouteEntry[] = [
-      { type: "condition", condition: { model: /^gpt-/ }, provider: prov },
-    ];
+    const entries: RouteEntry[] = [{ type: "condition", condition: { model: /^gpt-/ }, provider: prov }];
     const ctx = makeCtx({ modelId: "openai/gpt-4" });
 
     await resolveFromRouteChain(ctx, entries);
@@ -310,14 +287,10 @@ describe("resolveFromRouteChain", () => {
 
   test("condition route: getHandler returns null -> throws UnsupportedApiError", async () => {
     const prov = makeProvider("openai", { handler: null });
-    const entries: RouteEntry[] = [
-      { type: "condition", condition: { model: "gpt-4" }, provider: prov },
-    ];
+    const entries: RouteEntry[] = [{ type: "condition", condition: { model: "gpt-4" }, provider: prov }];
     const ctx = makeCtx({ modelId: "openai/gpt-4" });
 
-    await expect(resolveFromRouteChain(ctx, entries)).rejects.toBeInstanceOf(
-      UnsupportedApiError,
-    );
+    await expect(resolveFromRouteChain(ctx, entries)).rejects.toBeInstanceOf(UnsupportedApiError);
   });
 
   test("resolver route: returns provider -> committed", async () => {
@@ -361,9 +334,7 @@ describe("resolveFromRouteChain", () => {
     const entries: RouteEntry[] = [{ type: "resolver", resolver: () => prov }];
     const ctx = makeCtx({ modelId: "openai/gpt-4" });
 
-    await expect(resolveFromRouteChain(ctx, entries)).rejects.toBeInstanceOf(
-      UnsupportedApiError,
-    );
+    await expect(resolveFromRouteChain(ctx, entries)).rejects.toBeInstanceOf(UnsupportedApiError);
   });
 
   test("no match -> throws NoProviderError", async () => {
@@ -376,9 +347,7 @@ describe("resolveFromRouteChain", () => {
     ];
     const ctx = makeCtx({ modelId: "openai/gpt-4" });
 
-    await expect(resolveFromRouteChain(ctx, entries)).rejects.toBeInstanceOf(
-      NoProviderError,
-    );
+    await expect(resolveFromRouteChain(ctx, entries)).rejects.toBeInstanceOf(NoProviderError);
   });
 
   test("route chain respects registration order (first match wins)", async () => {

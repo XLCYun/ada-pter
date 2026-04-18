@@ -55,8 +55,7 @@ const createRequestConfig = (ctx: AdapterContext): RequestConfig => {
     user: cfg.user,
   };
   const { base, headers } = resolveRequestBase(ctx);
-  const path =
-    resolveApiPath(ctx, { default: RESPONSES_PATH }) ?? RESPONSES_PATH;
+  const path = resolveApiPath(ctx, { default: RESPONSES_PATH }) ?? RESPONSES_PATH;
   const url = joinPath(base, path);
   return {
     url,

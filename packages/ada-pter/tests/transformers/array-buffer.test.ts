@@ -44,9 +44,7 @@ describe("array buffer transformer", () => {
     await transformer(ctx);
 
     expect(ctx.response.data).toBeInstanceOf(ArrayBuffer);
-    const text = new TextDecoder().decode(
-      new Uint8Array(ctx.response.data as ArrayBuffer),
-    );
+    const text = new TextDecoder().decode(new Uint8Array(ctx.response.data as ArrayBuffer));
     expect(text).toBe(body);
   });
 

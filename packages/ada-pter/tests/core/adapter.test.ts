@@ -3,19 +3,13 @@ import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { AdaPter, adapter, createAdapter } from "../../src/core/adapter";
 import { autoLoader } from "../../src/core/auto-loader";
 import { defaults } from "../../src/defaults";
-import {
-  InvalidModelError,
-  NoProviderError,
-  UnsupportedApiError,
-} from "../../src/errors";
+import { InvalidModelError, NoProviderError, UnsupportedApiError } from "../../src/errors";
 import type { Middleware } from "../../src/types/core";
 import type { ApiHandler, Provider } from "../../src/types/provider";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function makeHandler(
-  response: unknown = { id: "1", model: "test", choices: [], usage: null },
-): ApiHandler {
+function makeHandler(response: unknown = { id: "1", model: "test", choices: [], usage: null }): ApiHandler {
   return {
     getRequestConfig: (ctx) => ({
       url: "https://api.test.com/v1/completions",
@@ -106,9 +100,7 @@ describe("streaming completions", () => {
     const failingProv = makeProvider("fail", failingHandler);
     const fallbackProv = makeProvider("ok", fallbackHandler);
 
-    const a = createAdapter()
-      .route({ model: /^fail/ }, failingProv)
-      .route({ model: /.*/ }, fallbackProv);
+    const a = createAdapter().route({ model: /^fail/ }, failingProv).route({ model: /.*/ }, fallbackProv);
 
     const streamResult = a.completion({
       model: ["fail-model", "good-model"],
@@ -147,19 +139,11 @@ describe("use()", () => {
       order.push("mw2-after");
     };
 
-    const a = createAdapter()
-      .use(mw1)
-      .use(mw2)
-      .route({ model: /.*/ }, makeProvider("test"));
+    const a = createAdapter().use(mw1).use(mw2).route({ model: /.*/ }, makeProvider("test"));
 
     await a.completion({ model: "test-model", messages: [] });
 
-    expect(order).toEqual([
-      "mw1-before",
-      "mw2-before",
-      "mw2-after",
-      "mw1-after",
-    ]);
+    expect(order).toEqual(["mw1-before", "mw2-before", "mw2-after", "mw1-after"]);
   });
 
   test("returns this for chaining", () => {
@@ -216,44 +200,31 @@ describe("route()", () => {
     const first = makeProvider("first", makeHandler({ id: "first" }));
     const second = makeProvider("second", makeHandler({ id: "second" }));
 
-    const a = createAdapter()
-      .route({ model: /^gpt-/ }, first)
-      .route({ model: /^gpt-/ }, second);
+    const a = createAdapter().route({ model: /^gpt-/ }, first).route({ model: /^gpt-/ }, second);
 
     const res = await a.completion({ model: "gpt-4", messages: [] });
     expect(res).toEqual({ id: "first" });
   });
 
   test("no matching route -> NoProviderError", async () => {
-    const a = createAdapter().route(
-      { model: /^claude-/ },
-      makeProvider("anthropic"),
-    );
+    const a = createAdapter().route({ model: /^claude-/ }, makeProvider("anthropic"));
 
-    await expect(
-      a.completion({ model: "gpt-4", messages: [] }),
-    ).rejects.toBeInstanceOf(NoProviderError);
+    await expect(a.completion({ model: "gpt-4", messages: [] })).rejects.toBeInstanceOf(NoProviderError);
   });
 
   test("route match but getHandler returns null -> UnsupportedApiError", async () => {
     const prov = makeProvider("openai", null);
     const a = createAdapter().route({ model: "gpt-4" }, prov);
 
-    await expect(
-      a.completion({ model: "gpt-4", messages: [] }),
-    ).rejects.toBeInstanceOf(UnsupportedApiError);
+    await expect(a.completion({ model: "gpt-4", messages: [] })).rejects.toBeInstanceOf(UnsupportedApiError);
   });
 
   test("invalid model id throws InvalidModelError", async () => {
     const a = createAdapter().route({ model: /.*/ }, makeProvider("test"));
 
-    await expect(
-      a.completion({ model: "/gpt-4", messages: [] }),
-    ).rejects.toBeInstanceOf(InvalidModelError);
+    await expect(a.completion({ model: "/gpt-4", messages: [] })).rejects.toBeInstanceOf(InvalidModelError);
 
-    await expect(
-      a.completion({ model: "openai//gpt-4", messages: [] }),
-    ).rejects.toBeInstanceOf(InvalidModelError);
+    await expect(a.completion({ model: "openai//gpt-4", messages: [] })).rejects.toBeInstanceOf(InvalidModelError);
   });
 
   test("returns this for chaining", () => {
@@ -303,9 +274,7 @@ describe("autoRoute()", () => {
 
     try {
       const a = createAdapter().autoRoute();
-      await expect(
-        a.completion({ model: "anthropic/claude", messages: [] }),
-      ).rejects.toBeInstanceOf(NoProviderError);
+      await expect(a.completion({ model: "anthropic/claude", messages: [] })).rejects.toBeInstanceOf(NoProviderError);
       expect(callCount).toBeGreaterThan(0);
     } finally {
       autoLoader.resolve = originalResolve;
@@ -317,9 +286,7 @@ describe("autoRoute()", () => {
 
 describe("configure()", () => {
   test("global config: sets model", async () => {
-    const a = createAdapter()
-      .configure({ model: "gpt-4" })
-      .route({ model: /^gpt-/ }, makeProvider("openai"));
+    const a = createAdapter().configure({ model: "gpt-4" }).route({ model: /^gpt-/ }, makeProvider("openai"));
 
     // Can call without passing model
     const res = await a.completion({ messages: [] });
@@ -355,9 +322,7 @@ describe("configure()", () => {
 
   test("deep merges global config on multiple calls", async () => {
     let capturedConfig: any;
-    const a2 = createAdapter()
-      .configure({ timeout: 5000 })
-      .configure({ maxRetries: 2 });
+    const a2 = createAdapter().configure({ timeout: 5000 }).configure({ maxRetries: 2 });
 
     // The global config should have both fields merged
     // We'll verify via a real call
@@ -454,13 +419,10 @@ describe("model fallback", () => {
         return Promise.resolve(new Response("error", { status: 500 }));
       }
       return Promise.resolve(
-        new Response(
-          JSON.stringify({ id: "1", model: "model-c", choices: [] }),
-          {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          },
-        ),
+        new Response(JSON.stringify({ id: "1", model: "model-c", choices: [] }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
       );
     });
 
@@ -526,9 +488,7 @@ describe("model fallback", () => {
 
     const a = createAdapter().route({ model: /.*/ }, prov);
 
-    await expect(
-      a.completion({ model: ["m1", "m2"], messages: [] }),
-    ).rejects.toThrow("always fails");
+    await expect(a.completion({ model: ["m1", "m2"], messages: [] })).rejects.toThrow("always fails");
   });
 });
 
@@ -813,10 +773,7 @@ describe("context fields", () => {
       ],
     };
 
-    const a = createAdapter().route(
-      { model: /.*/ },
-      makeProvider("test", handler),
-    );
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test", handler));
     await a.completion({ model: "test-model", messages: [] });
 
     expect(typeof fetchedInit.body).toBe("string");
@@ -1032,12 +989,10 @@ describe("responses API methods", () => {
 
 describe("multiple API-type configs", () => {
   test("different apiTypes get their own configs", async () => {
-    const a = createAdapter()
-      .configure("completion", { model: "gpt-4", timeout: 5000 })
-      .configure("embedding", {
-        model: "text-embedding-ada-002",
-        timeout: 3000,
-      });
+    const a = createAdapter().configure("completion", { model: "gpt-4", timeout: 5000 }).configure("embedding", {
+      model: "text-embedding-ada-002",
+      timeout: 3000,
+    });
 
     let completionConfig: any;
 
@@ -1102,9 +1057,7 @@ describe("api wrappers", () => {
     const executeMock = mock((apiType: any, params: any) => {
       seenTypes.push(apiType);
       seenParams.push(params);
-      return params.stream
-        ? makeStream(streamChunks)
-        : Promise.resolve({ id: "img" } as any);
+      return params.stream ? makeStream(streamChunks) : Promise.resolve({ id: "img" } as any);
     });
     (a as any).execute = executeMock;
 
@@ -1138,9 +1091,7 @@ describe("api wrappers", () => {
     const executeMock = mock((apiType: any, params: any) => {
       seenTypes.push(apiType);
       seenParams.push(params);
-      return params.stream
-        ? makeStream([{ text: "chunk" }])
-        : Promise.resolve({ text: "done" } as any);
+      return params.stream ? makeStream([{ text: "chunk" }]) : Promise.resolve({ text: "done" } as any);
     });
     (a as any).execute = executeMock;
 
@@ -1174,9 +1125,7 @@ describe("api wrappers", () => {
     const executeMock = mock((apiType: any, params: any) => {
       seenTypes.push(apiType);
       seenParams.push(params);
-      return params.stream
-        ? makeStream([{ audio: "chunk" }])
-        : Promise.resolve({ audio: "done" } as any);
+      return params.stream ? makeStream([{ audio: "chunk" }]) : Promise.resolve({ audio: "done" } as any);
     });
     (a as any).execute = executeMock;
 
