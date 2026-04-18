@@ -35,6 +35,7 @@ jobs:
         with:
           version: bunx changeset version
           publish: bun run release:ci
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
