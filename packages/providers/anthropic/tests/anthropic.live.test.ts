@@ -493,7 +493,7 @@ live("live: @ada-pter/anthropic tool use", () => {
 
     const res = await a.completion({
       model,
-      messages: [{ role: "user", content: "Hello, how are you?" }],
+      messages: [{ role: "user", content: "What is the weather in San Francisco, CA?" }],
       tools: [weatherTool],
       tool_choice: "required",
       max_tokens: 256,
@@ -508,7 +508,8 @@ live("live: @ada-pter/anthropic tool use", () => {
     expect(tc.function.name).toBe("get_weather");
   });
 
-  test("tool_choice none suppresses tool call", async () => {
+  //  使用 claude-sonnet-4-6 测试
+  test.only("tool_choice none suppresses tool call", async () => {
     const a = createTestAdapter();
 
     const res = await a.completion({
