@@ -1,3 +1,4 @@
+import { inferAnthropicProvider } from "./anthropic";
 import { inferOpenAIProvider } from "./openai";
 import { MODEL_PROVIDER_REGISTRY } from "./registry";
 
@@ -8,6 +9,9 @@ export function inferProvider(model: string): string {
 
   const openai = inferOpenAIProvider(model);
   if (openai) return openai;
+
+  const anthropic = inferAnthropicProvider(model);
+  if (anthropic) return anthropic;
 
   return "custom";
 }

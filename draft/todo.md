@@ -1,14 +1,2 @@
-- [ ] Improve passthrough of fields
-- [ ] Add support for extra_body, extra_headers
-- [ ] For the `messages` parameter, we prescribe the use of the OpenAI format. Therefore, for special providers, we need to provide the capability to transparently pass through parameters, or add support for additional fields if necessary.
-  - [ ] Support direct passthrough of parameters (pass parameters transparently as-is)
-  - [ ] Add support for provider-specific passthrough parameters
-  - [ ] When converting Anthropic messages to OpenAI format, handle provider_specific_fields
-- [ ] Handle the problem where the chunk parser cannot immediately parse a JSON string if it is split across multiple parts
+- [ ] Add support for extra_body and extra_headers passthrough
 - [ ] For responding assistant messages, we need a mechanism to preserve the original assistant message. If the model has not switched, we can reuse this original assistant message directly.
-- [ ] For assistant messages, if the audio or annotations fields exist, they need to be removed, as the OpenAI standard does not accept these fields.
-- [ ] Handle cache_control field - define its passing and effect in both parameter and response flows.
-- [ ] Support reasoning_content - ensure mapping and transformation from request to response is implemented.
-- [ ] Implement thinking_blocks - record and output thought processes step by step.
-- [ ] Add a list of common Anthropic models.
-
