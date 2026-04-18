@@ -1,4 +1,4 @@
-# ada-pter Core Package (`packages/ada-pter`) Implementation Plan (Synchronized with Current Code)
+# @ada-pter/core Core Package (`packages/@ada-pter/core`) Implementation Plan (Synchronized with Current Code)
 
 > This document has been updated to match the current repository implementation. Any parts from historical drafts that no longer match the codebase (such as OpenAI provider placeholder state, config-level provider bypassing route, built-in retry/timeout behavior in request middleware) have been removed or marked as not implemented.
 
@@ -33,7 +33,7 @@ Workspace configuration:
 
 ```json
 "workspaces": [
-  "packages/ada-pter",
+  "packages/@ada-pter/core",
   "packages/providers/*",
   "packages/integrations/*",
   "packages/middlewares/*"

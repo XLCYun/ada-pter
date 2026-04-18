@@ -1,6 +1,18 @@
-import type { AdapterContext, ApiHandler, Provider, RequestConfig } from "ada-pter";
-import { joinPath, jsonTransformer, resolveApiBase, resolveApiKey, resolveApiPath, sseTransformer } from "ada-pter";
-import type { ChatCompletionParamsBase } from "ada-pter/types/openai";
+import type {
+  AdapterContext,
+  ApiHandler,
+  Provider,
+  RequestConfig,
+} from "@ada-pter/core";
+import {
+  joinPath,
+  jsonTransformer,
+  resolveApiBase,
+  resolveApiKey,
+  resolveApiPath,
+  sseTransformer,
+} from "@ada-pter/core";
+import type { ChatCompletionCreateParamsBase } from "ada-pter/types/openai/completions";
 import { OPENAI_BASE } from "./common";
 import { embeddingHandler } from "./embedding";
 import { getImagesHandler } from "./images";

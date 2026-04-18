@@ -1,4 +1,4 @@
-# ada-pter 核心包（packages/ada-pter）实现方案（按当前代码同步）
+# @ada-pter/core 核心包（packages/@ada-pter/core）实现方案（按当前代码同步）
 
 > 本文已按仓库当前实现更新。历史草案中与代码不一致的部分（如 OpenAI provider 占位、配置级 provider、request 内置 retry/timeout 等）已移除或标注为未实现。
 
@@ -33,7 +33,7 @@ workspace 配置：
 
 ```json
 "workspaces": [
-  "packages/ada-pter",
+  "packages/@ada-pter/core",
   "packages/providers/*",
   "packages/integrations/*",
   "packages/middlewares/*"

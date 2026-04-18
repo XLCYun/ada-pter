@@ -1,4 +1,4 @@
-# ada-pter Unified LLM Adapter Layer Architecture
+# @ada-pter/core Unified LLM Adapter Layer Architecture
 
 ## 1. Positioning and Core Philosophy
 
@@ -19,14 +19,14 @@
 
 The monorepo uses **Bun workspaces**. Packages are published independently, with zero coupling among adapters.
 
-**Naming rule**: core package is `ada-pter`; all others are `@ada-pter/xxx`.
+**Naming rule**: core package is `@ada-pter/core`; all others are `@ada-pter/xxx`.
 
 **Responsibility-based layout**: providers, optional integrations, and middleware packages are grouped under dedicated subdirectories.
 
 ```txt
 ada-pter/
 ├── packages/
-│   ├── ada-pter/              # npm: ada-pter              - Core framework (middleware engine + types + utilities)
+│   ├── ada-pter/              # npm: @ada-pter/core              - Core framework (middleware engine + types + utilities)
 │   ├── providers/
 │   │   ├── openai/            # npm: @ada-pter/openai      - OpenAI adapter
 │   │   └── anthropic/         # npm: @ada-pter/anthropic   - Anthropic adapter (future)
@@ -44,7 +44,7 @@ Root `package.json` workspace config:
 
 ```json
 "workspaces": [
-  "packages/ada-pter",
+  "packages/@ada-pter/core",
   "packages/providers/*",
   "packages/integrations/*",
   "packages/middlewares/*"
@@ -305,7 +305,7 @@ Retry behavior (request-level, inside `createRequestMiddleware()`):
 
 ```typescript
 import { Observable } from 'rxjs';
-import type { AdaPter, CompletionRequest, StreamChunk } from 'ada-pter';
+import type { AdaPter, CompletionRequest, StreamChunk } from '@ada-pter/core';
 
 export function toObservable<T>(iterable: AsyncIterable<T>): Observable<T> {
   return new Observable(subscriber => {
@@ -355,7 +355,7 @@ Dispatch logic: `autoProvider.getHandler(ctx)` selects by `ctx.apiType`, using `
 Use exported `adapter` singleton with `autoRoute()` and environment variables.
 
 ```typescript
-import { adapter } from 'ada-pter';
+import { adapter } from '@ada-pter/core';
 
 adapter.autoRoute();
 
@@ -543,7 +543,7 @@ const middlewareA: Middleware = async (ctx, next) => {
 
 ## 6. Scope of v1
 
-- `ada-pter` core: middleware engine, route chain, config merge, unified executor, fallback chain via model array, autoRoute, provider inference, `defineProvider`, singleton export
+- `@ada-pter/core` core: middleware engine, route chain, config merge, unified executor, fallback chain via model array, autoRoute, provider inference, `defineProvider`, singleton export
 - `@ada-pter/openai`: completion + streaming completion
 - `@ada-pter/rxjs`: `toObservable`, `withRxJS`
 - `@ada-pter/logger`: standalone logging middleware package

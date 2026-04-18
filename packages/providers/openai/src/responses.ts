@@ -6,9 +6,18 @@ import type {
   ResponseCreateRequest,
   ResponseInputItemsListRequest,
   ResponseRetrieveRequest,
-} from "ada-pter";
-import { buildQuery, joinPath, jsonTransformer, resolveApiPath, sseTransformer } from "ada-pter";
-import type { ResponseCancelParams, ResponseDeleteParams } from "ada-pter/types/openai/responses";
+} from "@ada-pter/core";
+import {
+  buildQuery,
+  joinPath,
+  jsonTransformer,
+  resolveApiPath,
+  sseTransformer,
+} from "@ada-pter/core";
+import type {
+  ResponseCancelParams,
+  ResponseDeleteParams,
+} from "ada-pter/types/openai/responses";
 import { resolveRequestBase } from "./utils";
 
 const RESPONSES_PATH = "/responses";

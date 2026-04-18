@@ -4,7 +4,7 @@
 
 **TypeScript 版的统一、类型安全的大模型适配层**
 
-[![npm version](https://img.shields.io/npm/v/ada-pter.svg?style=flat-square)](https://www.npmjs.com/package/ada-pter)
+[![npm version](https://img.shields.io/npm/v/%40ada-pter%2Fcore.svg?style=flat-square)](https://www.npmjs.com/package/@ada-pter/core)
 [![codecov](https://codecov.io/gh/XLCYun/ada-pter/branch/main/graph/badge.svg?style=flat-square)](https://codecov.io/gh/XLCYun/ada-pter)
 [![CI Build](https://img.shields.io/github/actions/workflow/status/XLCYun/ada-pter/unit-tests.yml?branch=main&style=flat-square)](https://github.com/XLCYun/ada-pter/actions/workflows/unit-tests.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -40,16 +40,16 @@
 
 ```bash
 # 使用 bun
-bun add ada-pter @ada-pter/openai
+bun add @ada-pter/core @ada-pter/openai
 
 # 使用 npm
-npm install ada-pter @ada-pter/openai
+npm install @ada-pter/core @ada-pter/openai
 
 # 使用 pnpm
-pnpm add ada-pter @ada-pter/openai
+pnpm add @ada-pter/core @ada-pter/openai
 
 # 使用 yarn
-yarn add ada-pter @ada-pter/openai
+yarn add @ada-pter/core @ada-pter/openai
 ```
 
 ## 🚀 快速开始
@@ -57,7 +57,7 @@ yarn add ada-pter @ada-pter/openai
 以下是一个极简示例，展示如何使用默认导出的 `adapter` 单例。它底层使用了 `autoRoute`，会自动根据你提供的模型名称，推断并加载所需的供应商插件（如 `@ada-pter/openai` 或兼容 OpenAI 格式的其他供应商）！
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 // 发起统一的 API 调用 (自动使用推断出的供应商)
 const response = await adapter.completion({
@@ -71,7 +71,7 @@ console.log(response.choices[0].message.content);
 ### SSE 流式输出
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 // 使用流式输出
 const stream = await adapter.completion({
@@ -91,10 +91,10 @@ for await (const chunk of stream) {
 
 ## 🔄 自动 Fallback (失败降级)
 
-当主模型请求失败时，`ada-pter` 支持自动降级到备用模型，保障服务高可用性。
+当主模型请求失败时，`@ada-pter/core` 支持自动降级到备用模型，保障服务高可用性。
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 // model 字段支持数组形式，按顺序尝试，前一个失败后自动降级到下一个
 const response = await adapter.completion({
@@ -128,7 +128,7 @@ flowchart TB
 将特定的条件映射到一个供应商实例。你可以通过 `provider` (供应商前缀)、`model` (去掉前缀后的模型名) 或 `modelId` (完整的 `provider/model` 字符串) 进行匹配。
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 import { autoProvider as openAiProvider } from "@ada-pter/openai";
 
 // 通过供应商前缀匹配 (例如捕获 "openai/gpt-4o")
@@ -170,7 +170,7 @@ await myAdapter.completion({
 `ada-pter` 被设计为极易扩展。你可以定义你自己的供应商来接管特定的请求、模拟(Mock)响应数据，或者接入公司内部自研的大模型。
 
 ```typescript
-import { adapter, defineProvider, jsonTransformer, sseTransformer, type ApiHandler } from "ada-pter";
+import { adapter, defineProvider, jsonTransformer, sseTransformer, type ApiHandler } from "@ada-pter/core";
 
 // 1. 定义一个自定义供应商
 const myCustomProvider = defineProvider({
@@ -215,7 +215,7 @@ console.log(response.choices[0].message.content); // "来自自定义供应商�
 ### 配置示例
 
 ```typescript
-import { adapter, defaults } from "ada-pter";
+import { adapter, defaults } from "@ada-pter/core";
 
 // 1. 修改全局默认配置
 defaults.maxRetries = 2;
@@ -244,7 +244,7 @@ await adapter.completion({
 `ada-pter` 内置了请求级重试机制。你可以通过配置控制重试次数与退避策略；在可重试错误（如部分 5xx、429 等）场景下会自动重试。
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 const response = await adapter.completion({
   model: "openai/gpt-4o",
@@ -262,7 +262,7 @@ console.log(response.choices[0].message.content);
 你可以同时使用 `timeout` 与自定义 `signal`。框架会将两者统一组合，在超时或外部取消时及时终止请求。
 
 ```typescript
-import { adapter } from "ada-pter";
+import { adapter } from "@ada-pter/core";
 
 const controller = new AbortController();
 
@@ -284,7 +284,7 @@ console.log(result.choices[0].message.content);
 `ada-pter` 真正的强大之处在于其中间件引擎。请求和响应会流经一个中间件栈（类似于 Koa），这让你能够轻松地注入横切关注点。
 
 ```typescript
-import { AdaPter, type Middleware } from "ada-pter";
+import { AdaPter, type Middleware } from "@ada-pter/core";
 import { autoProvider as openAiProvider } from "@ada-pter/openai";
 
 // 一个简单的日志中间件
@@ -326,9 +326,9 @@ const adapter = new AdaPter()
 
 ## 🏗️ 项目架构 (Monorepo)
 
-`ada-pter` 作为 Bun workspace monorepo 进行维护。这种结构使核心引擎与具体的集成完全解耦。
+`@ada-pter/core` 作为 Bun workspace monorepo 进行维护。这种结构使核心引擎与具体的集成完全解耦。
 
-- `packages/ada-pter`：核心中间件引擎、类型定义与工具函数。
+- `packages/@ada-pter/core`：核心中间件引擎、类型定义与工具函数。
 - `packages/providers/*`：官方 LLM 供应商适配器。
 - `packages/middlewares/*`：可选的预置中间件（例如 logger）。
 - `packages/integrations/*`：可选的集成包（例如 RxJS 绑定）。

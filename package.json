@@ -11,6 +11,9 @@
   "scripts": {
     "build": "bun run --filter '*' build",
     "dev": "bun run --filter '*' dev",
+    "changeset": "changeset",
+    "release:ci": "changeset publish",
+    "release:dry-run": "changeset status --verbose",
     "test": "bun run test:unit",
     "test:unit": "bun run test:unit:bun",
     "test:unit:bun": "bun test packages",
@@ -26,12 +29,13 @@
     "format": "biome format --write ."
   },
   "devDependencies": {
-    "ada-pter": "workspace:*",
     "@ada-pter/openai": "workspace:*",
     "@biomejs/biome": "^2.3.14",
+    "@changesets/cli": "^2.29.8",
+    "@types/bun": "latest",
+    "@ada-pter/core": "workspace:*",
     "tsdown": "^0.20.3",
     "typescript": "^5.9.3",
-    "@types/bun": "latest",
     "vitest": "^2.1.9"
   }
 }
