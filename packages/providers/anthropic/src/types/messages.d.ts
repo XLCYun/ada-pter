@@ -400,28 +400,46 @@ export type ToolSearchResult = ToolSearchToolSearchResultBlock;
 export type ToolSearchToolResultSuccess = ToolSearchToolSearchResultBlock;
 
 export type Model =
+  // Claude 4.7+
+  | "claude-opus-4-7"
+  // Claude 4.6
   | "claude-opus-4-6"
   | "claude-sonnet-4-6"
-  | "claude-opus-4-5-20251101"
+  // Claude 4.5
   | "claude-opus-4-5"
-  | "claude-3-7-sonnet-latest"
-  | "claude-3-7-sonnet-20250219"
-  | "claude-3-5-haiku-latest"
-  | "claude-3-5-haiku-20241022"
-  | "claude-haiku-4-5"
-  | "claude-haiku-4-5-20251001"
-  | "claude-sonnet-4-20250514"
-  | "claude-sonnet-4-0"
-  | "claude-4-sonnet-20250514"
+  | "claude-opus-4-5-20251101"
   | "claude-sonnet-4-5"
   | "claude-sonnet-4-5-20250929"
+  | "claude-haiku-4-5"
+  | "claude-haiku-4-5-20251001"
+  // Claude 4.1
+  | "claude-opus-4-1"
+  | "claude-opus-4-1-20250805"
+  // Claude 4
   | "claude-opus-4-0"
+  | "claude-opus-4"
   | "claude-opus-4-20250514"
   | "claude-4-opus-20250514"
-  | "claude-opus-4-1-20250805"
+  | "claude-sonnet-4-0"
+  | "claude-sonnet-4"
+  | "claude-sonnet-4-20250514"
+  | "claude-4-sonnet-20250514"
+  // Claude 3.7
+  | "claude-3-7-sonnet-latest"
+  | "claude-3-7-sonnet-20250219"
+  // Claude 3.5
+  | "claude-3-5-sonnet-latest"
+  | "claude-3-5-sonnet-20241022"
+  | "claude-3-5-sonnet-20240620"
+  | "claude-3-5-haiku-latest"
+  | "claude-3-5-haiku-20241022"
+  // Claude 3
   | "claude-3-opus-latest"
   | "claude-3-opus-20240229"
+  | "claude-3-sonnet-latest"
+  | "claude-3-sonnet-20240229"
   | "claude-3-haiku-20240307"
+  // fallback for future models
   | (string & {});
 
 export type StopReason = "end_turn" | "max_tokens" | "stop_sequence" | "tool_use" | "pause_turn" | "refusal";

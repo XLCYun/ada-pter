@@ -16,6 +16,15 @@ describe("inferProvider", () => {
     expect(inferProvider("gpt-not-exists-model")).toBe("openai");
   });
 
+  test("returns anthropic from registry", () => {
+    expect(inferProvider("claude-opus-4-7")).toBe("anthropic");
+    expect(inferProvider("claude-sonnet-4-6")).toBe("anthropic");
+  });
+
+  test("falls back to Anthropic inference when registry miss", () => {
+    expect(inferProvider("claude-future-model")).toBe("anthropic");
+  });
+
   test("returns custom when no provider matches", () => {
     expect(inferProvider("")).toBe("custom");
   });
