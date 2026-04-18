@@ -1,5 +1,16 @@
 # @ada-pter/openai
 
+## 0.4.0
+
+### Minor Changes
+
+- dd7d366: Upgrade anthropic package with improvements; update type definitions in core and openai packages
+
+### Patch Changes
+
+- Updated dependencies [dd7d366]
+  - @ada-pter/core@0.3.0
+
 ## 0.3.0
 
 ### Minor Changes
