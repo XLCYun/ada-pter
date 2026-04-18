@@ -1,5 +1,11 @@
 # ada-pter
 
+## 0.4.0
+
+### Minor Changes
+
+- a6b465a: Add Anthropic model list to registry and auto-detection for claude-\* models
+
 ## 0.3.0
 
 ### Minor Changes
