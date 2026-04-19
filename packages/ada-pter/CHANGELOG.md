@@ -1,5 +1,11 @@
 # ada-pter
 
+## 0.5.1
+
+### Patch Changes
+
+- 07fa97a: Replace `deepMerge` with `mergeConfig`: top-level fields use shallow merge (later overrides earlier), while `extraBody` and `extraHeaders` internal fields are merged across config levels (one level deep, no recursion)
+
 ## 0.5.0
 
 ### Minor Changes
