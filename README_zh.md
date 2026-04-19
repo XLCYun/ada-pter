@@ -348,7 +348,7 @@ const adapter = new AdaPter()
 
 ### 当前支持的供应商
 - **OpenAI** (`@ada-pter/openai`)
-- *Anthropic (`@ada-pter/anthropic`) - 开发中*
+- **Anthropic** (`@ada-pter/anthropic`)
 
 ## 🏗️ 项目架构 (Monorepo)
 

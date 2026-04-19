@@ -348,7 +348,7 @@ You can use middlewares to implement:
 
 ### Current Providers
 - **OpenAI** (`@ada-pter/openai`)
-- *Anthropic (`@ada-pter/anthropic`) - Coming soon*
+- **Anthropic** (`@ada-pter/anthropic`)
 
 ## 🏗️ Project Architecture (Monorepo)
 
