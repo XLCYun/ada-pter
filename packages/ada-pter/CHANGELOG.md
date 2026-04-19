@@ -1,5 +1,11 @@
 # ada-pter
 
+## 0.5.0
+
+### Minor Changes
+
+- 061a91b: Add `extraBody` and `extraHeaders` passthrough support for arbitrary request body fields and HTTP headers
+
 ## 0.4.0
 
 ### Minor Changes
