@@ -1,2 +1,2 @@
-- [ ] Add support for extra_body and extra_headers passthrough
+- [x] Add support for extraBody and extraHeaders passthrough
 - [ ] For responding assistant messages, we need a mechanism to preserve the original assistant message. If the model has not switched, we can reuse this original assistant message directly.

@@ -239,6 +239,32 @@ await adapter.completion({
 });
 ```
 
+## 🔌 透传额外 Body 与 Headers (Extra Body & Extra Headers)
+
+当你需要传递 `ada-pter` 未原生映射的供应商特有参数或自定义请求头时，可以使用 `extraBody` 和 `extraHeaders`。它们会在供应商构建完请求体和请求头**之后**进行合并，因此传入的键名应为供应商特定的格式。
+
+两者均支持四级配置体系（全局、Adapter 级、API 级、请求级）。
+
+```typescript
+import { adapter } from "@ada-pter/core";
+
+const response = await adapter.completion({
+  model: "anthropic/claude-sonnet-4-20250514",
+  messages: [{ role: "user", content: "你好" }],
+  // 透传额外的请求体字段（使用供应商特定的键名）
+  extraBody: {
+    metadata: { user_id: "user-123" },
+  },
+  // 透传额外的 HTTP 请求头
+  extraHeaders: {
+    "X-Request-Id": "req-456",
+    "anthropic-beta": "interleaved-thinking-2025-05-14",
+  },
+});
+```
+
+> **注意：** `extraBody` 使用**浅合并** — 顶层键会直接覆盖供应商构建的同名字段。如需覆盖嵌套字段，请传入完整的嵌套对象。
+
 ## 🔁 内置请求级重试控制器
 
 `ada-pter` 内置了请求级重试机制。你可以通过配置控制重试次数与退避策略；在可重试错误（如部分 5xx、429 等）场景下会自动重试。

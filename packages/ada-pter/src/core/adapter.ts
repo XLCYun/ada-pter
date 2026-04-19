@@ -251,6 +251,26 @@ export class AdaPter {
     const handlerConfig = ctx.handler!.getRequestConfig(ctx);
 
     const mergedRequest = { ...ctx.request, ...handlerConfig };
+
+    // --- extraHeaders passthrough (after provider builds its headers) ---
+    if (config.extraHeaders) {
+      const preliminaryHeaders = new Headers(mergedRequest.headers);
+      for (const [key, value] of Object.entries(config.extraHeaders)) {
+        if (value !== undefined) preliminaryHeaders.set(key, value);
+      }
+      mergedRequest.headers = preliminaryHeaders;
+    }
+
+    // --- extraBody passthrough (after provider builds its body) ---
+    if (config.extraBody) {
+      const currentBody = mergedRequest.body;
+      if (currentBody != null && typeof currentBody === "object" && !(currentBody instanceof FormData)) {
+        mergedRequest.body = { ...currentBody, ...config.extraBody };
+      } else if (currentBody == null) {
+        mergedRequest.body = config.extraBody as unknown as BodyInit;
+      }
+    }
+
     const headers = new Headers(mergedRequest.headers);
     const isFormDataBody = mergedRequest.body instanceof FormData;
 

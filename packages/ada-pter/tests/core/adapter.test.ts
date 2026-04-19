@@ -1152,3 +1152,280 @@ describe("api wrappers", () => {
     ]);
   });
 });
+
+// ─── extraBody and extraHeaders passthrough ────────────────────────────────
+
+describe("extraBody and extraHeaders passthrough", () => {
+  test("extraBody merges into provider-built body at call-level", async () => {
+    let fetchedBody: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedBody = JSON.parse(init?.body ?? "{}");
+      return defaultFetchImpl();
+    });
+
+    const handler: ApiHandler = {
+      getRequestConfig: (ctx) => ({
+        url: "https://api.test.com/v1/completions",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: { model: ctx.model, messages: ctx.config.messages },
+      }),
+      responseTransformers: [
+        async (ctx) => {
+          ctx.response.data = await ctx.response.raw!.json();
+        },
+      ],
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test", handler));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraBody: { custom_param: "hello" },
+    });
+
+    expect(fetchedBody.model).toBe("test-model");
+    expect(fetchedBody.custom_param).toBe("hello");
+  });
+
+  test("extraBody shallow-merges: nested objects are replaced entirely", async () => {
+    let fetchedBody: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedBody = JSON.parse(init?.body ?? "{}");
+      return defaultFetchImpl();
+    });
+
+    const handler: ApiHandler = {
+      getRequestConfig: (ctx) => ({
+        url: "https://api.test.com/v1/completions",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: { model: ctx.model, messages: [], nested: { a: 1, c: 3 } },
+      }),
+      responseTransformers: [
+        async (ctx) => {
+          ctx.response.data = await ctx.response.raw!.json();
+        },
+      ],
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test", handler));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraBody: { nested: { b: 2 } },
+    });
+
+    // Shallow merge: nested object is replaced entirely, not deep-merged
+    expect(fetchedBody.nested).toEqual({ b: 2 });
+  });
+
+  test("extraBody overrides provider-built fields", async () => {
+    let fetchedBody: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedBody = JSON.parse(init?.body ?? "{}");
+      return defaultFetchImpl();
+    });
+
+    const handler: ApiHandler = {
+      getRequestConfig: (ctx) => ({
+        url: "https://api.test.com/v1/completions",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: { model: ctx.model, max_tokens: 100 },
+      }),
+      responseTransformers: [
+        async (ctx) => {
+          ctx.response.data = await ctx.response.raw!.json();
+        },
+      ],
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test", handler));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraBody: { max_tokens: 999 },
+    });
+
+    expect(fetchedBody.max_tokens).toBe(999);
+  });
+
+  test("extraHeaders adds custom headers", async () => {
+    let fetchedHeaders: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedHeaders = new Headers(init?.headers);
+      return defaultFetchImpl();
+    });
+
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test"));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraHeaders: { "X-Custom-Header": "test-value" },
+    });
+
+    expect(fetchedHeaders.get("X-Custom-Header")).toBe("test-value");
+  });
+
+  test("extraHeaders overrides provider-built headers", async () => {
+    let fetchedHeaders: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedHeaders = new Headers(init?.headers);
+      return defaultFetchImpl();
+    });
+
+    const handler: ApiHandler = {
+      getRequestConfig: () => ({
+        url: "https://api.test.com/v1/completions",
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Api-Version": "v1" },
+        body: {},
+      }),
+      responseTransformers: [
+        async (ctx) => {
+          ctx.response.data = await ctx.response.raw!.json();
+        },
+      ],
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test", handler));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraHeaders: { "X-Api-Version": "v2" },
+    });
+
+    expect(fetchedHeaders.get("X-Api-Version")).toBe("v2");
+  });
+
+  test("both extraBody and extraHeaders work together", async () => {
+    let fetchedBody: any;
+    let fetchedHeaders: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedBody = JSON.parse(init?.body ?? "{}");
+      fetchedHeaders = new Headers(init?.headers);
+      return defaultFetchImpl();
+    });
+
+    const handler: ApiHandler = {
+      getRequestConfig: (ctx) => ({
+        url: "https://api.test.com/v1/completions",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: { model: ctx.model },
+      }),
+      responseTransformers: [
+        async (ctx) => {
+          ctx.response.data = await ctx.response.raw!.json();
+        },
+      ],
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test", handler));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraBody: { custom_field: "value" },
+      extraHeaders: { "X-Request-Id": "123" },
+    });
+
+    expect(fetchedBody.custom_field).toBe("value");
+    expect(fetchedHeaders.get("X-Request-Id")).toBe("123");
+  });
+
+  test("extraBody is skipped when body is FormData", async () => {
+    let fetchedBody: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedBody = init?.body;
+      return defaultFetchImpl();
+    });
+
+    const handler: ApiHandler = {
+      getRequestConfig: () => {
+        const fd = new FormData();
+        fd.append("file", "test");
+        return {
+          url: "https://api.test.com/v1/completions",
+          method: "POST",
+          headers: {},
+          body: fd,
+        };
+      },
+      responseTransformers: [
+        async (ctx) => {
+          ctx.response.data = await ctx.response.raw!.json();
+        },
+      ],
+    };
+
+    const a = createAdapter().route({ model: /.*/ }, makeProvider("test", handler));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraBody: { should_not_appear: true },
+    });
+
+    expect(fetchedBody).toBeInstanceOf(FormData);
+  });
+
+  test("extraBody and extraHeaders support three-level merge", async () => {
+    let fetchedBody: any;
+    let fetchedHeaders: any;
+    mockFetch.mockImplementation((_url: any, init: any) => {
+      fetchedBody = JSON.parse(init?.body ?? "{}");
+      fetchedHeaders = new Headers(init?.headers);
+      return defaultFetchImpl();
+    });
+
+    const handler: ApiHandler = {
+      getRequestConfig: (ctx) => ({
+        url: "https://api.test.com/v1/completions",
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: { model: ctx.model },
+      }),
+      responseTransformers: [
+        async (ctx) => {
+          ctx.response.data = await ctx.response.raw!.json();
+        },
+      ],
+    };
+
+    const a = createAdapter()
+      .configure({
+        extraBody: { global_field: "global", shared: "from-global" },
+        extraHeaders: { "X-Global": "global" },
+      })
+      .configure("completion", {
+        extraBody: { api_field: "api" },
+        extraHeaders: { "X-Api": "api" },
+      })
+      .route({ model: /.*/ }, makeProvider("test", handler));
+
+    await a.completion({
+      model: "test-model",
+      messages: [],
+      extraBody: { call_field: "call", shared: "from-call" },
+      extraHeaders: { "X-Call": "call" },
+    });
+
+    // Body: global + api + call merged (deepMerge across config levels)
+    expect(fetchedBody.global_field).toBe("global");
+    expect(fetchedBody.api_field).toBe("api");
+    expect(fetchedBody.call_field).toBe("call");
+    expect(fetchedBody.shared).toBe("from-call"); // call-level overrides
+
+    // Headers: global + api + call merged
+    expect(fetchedHeaders.get("X-Global")).toBe("global");
+    expect(fetchedHeaders.get("X-Api")).toBe("api");
+    expect(fetchedHeaders.get("X-Call")).toBe("call");
+  });
+});

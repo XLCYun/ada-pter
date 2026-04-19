@@ -239,6 +239,32 @@ await adapter.completion({
 });
 ```
 
+## 🔌 Extra Body & Extra Headers Passthrough
+
+When you need to pass provider-specific parameters or custom headers that `ada-pter` doesn't natively map, you can use `extraBody` and `extraHeaders`. These are merged into the request **after** the provider has built its specific body and headers, so keys should be provider-specific.
+
+Both support the 4-level configuration hierarchy (global, adapter, API, request level).
+
+```typescript
+import { adapter } from "@ada-pter/core";
+
+const response = await adapter.completion({
+  model: "anthropic/claude-sonnet-4-20250514",
+  messages: [{ role: "user", content: "Hello" }],
+  // Pass arbitrary body fields (provider-specific keys)
+  extraBody: {
+    metadata: { user_id: "user-123" },
+  },
+  // Pass arbitrary HTTP headers
+  extraHeaders: {
+    "X-Request-Id": "req-456",
+    "anthropic-beta": "interleaved-thinking-2025-05-14",
+  },
+});
+```
+
+> **Note:** `extraBody` uses a **shallow merge** — top-level keys override provider-built keys with the same name. If you need to override a nested field, pass the complete nested object.
+
 ## 🔁 Built-in Request-Level Retry Controller
 
 `ada-pter` has a built-in request-level retry mechanism. You can control retries and backoff behavior via config; retryable failures (such as some 5xx and 429 responses) are retried automatically.

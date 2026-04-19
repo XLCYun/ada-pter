@@ -42,4 +42,12 @@ export interface AdapterConfig extends MapAny {
 
   /** Abort signal for cancellation. */
   signal?: AbortSignal;
+
+  /** Arbitrary extra body fields merged into the provider-built request body (after provider mapping, so keys are provider-specific).
+   *  Shallow-merged: top-level keys override provider-built keys with the same name. */
+  extraBody?: Record<string, unknown>;
+
+  /** Arbitrary extra HTTP headers merged into the provider-built request headers.
+   *  Simple key-value merge: later values override earlier ones. */
+  extraHeaders?: Record<string, string>;
 }
