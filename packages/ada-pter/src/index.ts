@@ -6,7 +6,7 @@ export {
   adapter,
   compose,
   createAdapter,
-  deepMerge,
+  mergeConfig,
   matchCondition,
   matchPattern,
   parseModelId,

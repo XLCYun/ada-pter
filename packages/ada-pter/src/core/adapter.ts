@@ -38,7 +38,7 @@ import type {
 
 import type { RouteCondition, RouteEntry, RouteResolver } from "../types/route";
 import { compose } from "./compose";
-import { deepMerge } from "./config";
+import { mergeConfig } from "./config";
 import { createRequestMiddleware } from "./request";
 import { parseModelId, resolveFromRouteChain } from "./router";
 
@@ -105,12 +105,12 @@ export class AdaPter {
     if (typeof configOrApiType === "string") {
       // API-level config
       const existing = this.apiConfigs.get(configOrApiType) ?? {};
-      this.apiConfigs.set(configOrApiType, deepMerge(existing, config));
+      this.apiConfigs.set(configOrApiType, mergeConfig(existing, config));
       return this;
     }
 
     // Global config
-    this.globalConfig = deepMerge(this.globalConfig, configOrApiType);
+    this.globalConfig = mergeConfig(this.globalConfig, configOrApiType);
     return this;
   }
   // ── Internal execution ───────────────────────────────────────────────────
@@ -168,7 +168,7 @@ export class AdaPter {
     config: AdapterConfig;
     models: string[];
   } {
-    const config = deepMerge(defaults, this.globalConfig, this.apiConfigs.get(apiType) ?? {}, params);
+    const config = mergeConfig(defaults, this.globalConfig, this.apiConfigs.get(apiType) ?? {}, params);
 
     const modelConfig = config.model;
     if (!modelConfig) throw new Error("No model specified.");

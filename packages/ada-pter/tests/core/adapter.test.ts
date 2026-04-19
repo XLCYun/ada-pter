@@ -320,7 +320,7 @@ describe("configure()", () => {
     expect(resolvedModel).toBe("claude-3");
   });
 
-  test("deep merges global config on multiple calls", async () => {
+  test("merges global config on multiple calls", async () => {
     let capturedConfig: any;
     const a2 = createAdapter().configure({ timeout: 5000 }).configure({ maxRetries: 2 });
 
@@ -1417,7 +1417,7 @@ describe("extraBody and extraHeaders passthrough", () => {
       extraHeaders: { "X-Call": "call" },
     });
 
-    // Body: global + api + call merged (deepMerge across config levels)
+    // Body: global + api + call merged (mergeConfig across config levels)
     expect(fetchedBody.global_field).toBe("global");
     expect(fetchedBody.api_field).toBe("api");
     expect(fetchedBody.call_field).toBe("call");
