@@ -1,5 +1,12 @@
 # @ada-pter/openai
 
+## 0.4.4
+
+### Patch Changes
+
+- Updated dependencies [4ade1b7]
+  - @ada-pter/core@0.6.0
+
 ## 0.4.3
 
 ### Patch Changes
