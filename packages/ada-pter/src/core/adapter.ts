@@ -31,6 +31,7 @@ import type {
   SpeechRequest,
   SpeechResponse,
   SpeechStreamChunk,
+  StreamingCompletionResult,
   TranscriptionRequest,
   TranscriptionResponse,
   TranscriptionStreamChunk,
@@ -40,6 +41,7 @@ import type { RouteCondition, RouteEntry, RouteResolver } from "../types/route";
 import { compose } from "./compose";
 import { mergeConfig } from "./config";
 import { createRequestMiddleware } from "./request";
+import { createStreamingResult } from "./streaming-result";
 import { parseModelId, resolveFromRouteChain } from "./router";
 
 /**
@@ -305,12 +307,23 @@ export class AdaPter {
 
   // ── Public API methods ───────────────────────────────────────────────────
 
-  completion(params: CompletionRequest & { stream: true }): AsyncIterable<CompletionChunk>;
+  /**
+   * Completion API method.
+   *
+   * Note: Unlike other API methods, this has custom logic for streaming to return
+   * a `StreamingCompletionResult` (which includes `finalMessage` promise) instead
+   * of a plain `AsyncIterable`. This requires calling `createStreamingResult` directly
+   * rather than delegating to `execute()`.
+   */
+  completion(params: CompletionRequest & { stream: true }): StreamingCompletionResult;
   completion(params: CompletionRequest & { stream?: false | undefined }): Promise<CompletionResponse>;
-  completion(params: CompletionRequest): Promise<CompletionResponse> | AsyncIterable<CompletionChunk> {
-    return this.execute<CompletionResponse | CompletionChunk>("completion", params as never) as
-      | Promise<CompletionResponse>
-      | AsyncIterable<CompletionChunk>;
+  completion(params: CompletionRequest): Promise<CompletionResponse> | StreamingCompletionResult {
+    const { config, models } = this.resolveConfig("completion", params as never);
+    if (config.stream) {
+      const source = this.executeAsStream<CompletionChunk>("completion", config, models);
+      return createStreamingResult(source);
+    }
+    return this.executeAsPromise<CompletionResponse>("completion", config, models);
   }
 
   embedding(params: EmbeddingRequest): Promise<EmbeddingResponse> {

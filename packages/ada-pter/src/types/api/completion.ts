@@ -15,3 +15,9 @@ export type CompletionRequest = Partial<Omit<ChatCompletionParamsBase, "model">>
 export type CompletionResponse = ChatCompletion;
 export type CompletionChunk = ChatCompletionChunk;
 export type CompletionMessage = ChatCompletionMessageParam;
+
+/** Streaming completion result: async iterable of chunks with a finalMessage promise. */
+export interface StreamingCompletionResult extends AsyncIterable<CompletionChunk> {
+  /** Promise that resolves to the merged ChatCompletion after stream ends. */
+  readonly finalMessage: Promise<CompletionResponse>;
+}

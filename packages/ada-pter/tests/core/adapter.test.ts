@@ -116,6 +116,61 @@ describe("streaming completions", () => {
 
     expect(collected).toEqual([{ id: "chunk" }]);
   });
+
+  test("completion({ stream: true }) returns StreamingCompletionResult with finalMessage", async () => {
+    const chunks = [
+      { id: "c1", object: "chat.completion.chunk", created: 1, model: "test", choices: [{ index: 0, delta: { role: "assistant" as const, content: "Hello" }, finish_reason: null }] },
+      { id: "c1", object: "chat.completion.chunk", created: 1, model: "test", choices: [{ index: 0, delta: { content: " world" }, finish_reason: null }] },
+      { id: "c1", object: "chat.completion.chunk", created: 1, model: "test", choices: [{ index: 0, delta: {}, finish_reason: "stop" as const }], usage: { prompt_tokens: 5, completion_tokens: 2, total_tokens: 7 } },
+    ];
+    const streamHandler = makeHandler(makeStream(chunks));
+    const prov = makeProvider("stream", streamHandler);
+    const a = createAdapter().route({ model: /.*/ }, prov);
+
+    const result = a.completion({ model: "test", messages: [], stream: true });
+
+    // Verify finalMessage property exists and is a Promise
+    expect("finalMessage" in result).toBe(true);
+    expect((result as any).finalMessage).toBeInstanceOf(Promise);
+
+    // Verify iteration still works
+    const received: any[] = [];
+    for await (const c of result as AsyncIterable<any>) {
+      received.push(c);
+    }
+    expect(received).toHaveLength(3);
+
+    // Verify finalMessage resolves to merged completion
+    const final = await (result as any).finalMessage;
+    expect(final.object).toBe("chat.completion");
+    expect(final.choices[0].message.content).toBe("Hello world");
+    expect(final.choices[0].finish_reason).toBe("stop");
+    expect(final.usage.total_tokens).toBe(7);
+  });
+
+  test("completion({ stream: false }) is unaffected and returns Promise", async () => {
+    const nonStreamResponse = {
+      id: "chatcmpl-1",
+      object: "chat.completion",
+      created: 1234567890,
+      model: "test-model",
+      choices: [{ index: 0, message: { role: "assistant", content: "Hi" }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+    };
+    const handler = makeHandler(nonStreamResponse);
+    const prov = makeProvider("test", handler);
+    const a = createAdapter().route({ model: /.*/ }, prov);
+
+    const result = a.completion({ model: "test", messages: [] });
+
+    // Non-stream returns a Promise, not a StreamingCompletionResult
+    expect(result).toBeInstanceOf(Promise);
+    expect("finalMessage" in result).toBe(false);
+
+    const res = await result;
+    expect(res.id).toBe("chatcmpl-1");
+    expect(res.choices[0].message.content).toBe("Hi");
+  });
 });
 
 afterEach(() => {

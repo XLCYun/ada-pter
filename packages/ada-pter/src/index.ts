@@ -6,6 +6,8 @@ export {
   adapter,
   compose,
   createAdapter,
+  createStreamingResult,
+  mergeChunks,
   mergeConfig,
   matchCondition,
   matchPattern,
@@ -86,6 +88,7 @@ export type {
   SpeechRequest,
   SpeechResponse,
   SpeechStreamChunk,
+  StreamingCompletionResult,
 } from "./types";
 
 export const VERSION = "0.0.1";

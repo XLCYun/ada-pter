@@ -182,7 +182,7 @@ const handleContentBlockDelta = (event: RawContentBlockDeltaEvent, state: Stream
   const thinkingBlock: ThinkingBlock = { type: "thinking", thinking, signature };
   return {
     thinking_blocks: [thinkingBlock],
-    reasoning_content: state.reasoningContent || null,
+    reasoning_content: thinking || null,
     provider_specific_fields: { thinking_blocks: [thinkingBlock] },
   };
 };

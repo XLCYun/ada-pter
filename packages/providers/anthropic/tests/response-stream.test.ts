@@ -512,7 +512,7 @@ describe("anthropicStreamingTransformer — thinking", () => {
     expect(thinkChunks.length).toBeGreaterThan(0);
   });
 
-  test("thinking_delta 的 reasoning_content 在最后的 message_delta 中完整返回", async () => {
+  test("thinking_delta 的 reasoning_content 每个 chunk 只包含增量", async () => {
     const events = [
       {
         type: "message_start",
@@ -535,18 +535,14 @@ describe("anthropicStreamingTransformer — thinking", () => {
       { type: "message_stop" },
     ];
     const chunks = await collectChunks(events);
-    
-    // 验证思考内容被完整累积
-    const reasoningContents = chunks
-      .filter((c) => c.choices[0].delta.reasoning_content != null)
-      .map((c) => c.choices[0].delta.reasoning_content);
-    expect(reasoningContents.length).toBeGreaterThan(0);
-    
-    // 最后一个 reasoning_content 应该是完整的累积结果
-    const lastReasoningContent = reasoningContents[reasoningContents.length - 1];
-    expect(lastReasoningContent).toContain("Step 1.");
-    expect(lastReasoningContent).toContain("Step 2.");
-    expect(lastReasoningContent).toContain("Step 3.");
+
+    const reasoningChunks = chunks.filter((c) => c.choices[0].delta.reasoning_content != null);
+    expect(reasoningChunks.length).toBe(3);
+
+    // 每个 chunk 的 reasoning_content 是增量，不是累加值
+    expect(reasoningChunks[0].choices[0].delta.reasoning_content).toBe("Step 1.");
+    expect(reasoningChunks[1].choices[0].delta.reasoning_content).toBe(" Step 2.");
+    expect(reasoningChunks[2].choices[0].delta.reasoning_content).toBe(" Step 3.");
   });
 
   test("signature_delta 生成 thinking_blocks delta（含 signature 字段）", async () => {
