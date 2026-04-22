@@ -1,5 +1,12 @@
 # @ada-pter/anthropic
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [4ade1b7]
+  - @ada-pter/core@0.6.0
+
 ## 0.3.2
 
 ### Patch Changes
